@@ -1,0 +1,18 @@
+:root {
+  /* Premium Dark Theme */
+  --color-bg: #0f172a;
+  --color-surface: rgba(30, 41, 59, 0.7);
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-text-main: #f8fafc;
+  --color-text-muted: #94a3b8;
+  
+  /* Borders & Shadows */
+  --border-radius: 16px;
+  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  --glass-blur: blur(12px);
+  
+  /* Typography */
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
