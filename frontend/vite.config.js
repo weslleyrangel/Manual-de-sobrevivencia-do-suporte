@@ -14,8 +14,8 @@ export default defineConfig({
         name: 'Manual de Sobrevivência do Suporte',
         short_name: 'Manual IT',
         description: 'Base de conhecimento rápida e offline-first para técnicos de TI.',
-        theme_color: '#0f172a',
-        background_color: '#0f172a',
+        theme_color: '#247A3D',
+        background_color: '#FBFAF3',
         display: 'standalone',
         icons: [
           {
