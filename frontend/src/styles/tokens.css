@@ -1,12 +1,12 @@
 :root {
-  /* Brand & Theme Colors (Design.pen Tokens) */
+  /* Opção 1: Guia de Campo & Serenidade (UX Refined Tokens) */
   --surface-primary: #FFFFFF;
   --surface-secondary: #F5F6F1;
-  --surface-inverse: #111111;
+  --surface-inverse: #181D17;
   
-  --foreground-primary: #111111;
-  --foreground-secondary: #4A4A42;
-  --foreground-muted: #85857C;
+  --foreground-primary: #181D17;
+  --foreground-secondary: #4A4E46;
+  --foreground-muted: #787D74;
   --foreground-inverse: #FFFFFF;
   
   --accent-primary: #247A3D;
@@ -17,15 +17,15 @@
   --yellow-signal: #F4C542;
   --yellow-pale: #FFF3B8;
   
-  --ink: #111111;
+  --ink: #181D17;
   --cream: #FBFAF3;
-  --border-subtle: #E4E5DE;
-  --border-input: #CBCCC9;
+  --border-subtle: #E5E7DF;
+  --border-input: #D2D6CC;
   
   --app-bg: #FBFAF3;
   --app-surface: #FFFFFF;
-  --app-text: #111111;
-  --app-muted: #4A4A42;
+  --app-text: #181D17;
+  --app-muted: #4A4E46;
   --app-accent: #247A3D;
   --app-highlight: #F4C542;
   
@@ -34,10 +34,10 @@
   --color-success-foreground: #004D1A;
   --color-warning: #E9E3D8;
   --color-warning-foreground: #804200;
-  --color-error: #E5DCDA;
-  --color-error-foreground: #8C1C00;
-  --color-info: #DFDFE6;
-  --color-info-foreground: #000066;
+  --color-error: #FDE8E8;
+  --color-error-foreground: #9B1C1C;
+  --color-info: #E1EFFE;
+  --color-info-foreground: #1E429F;
 
   /* Typography */
   --font-heading: 'Funnel Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -51,10 +51,10 @@
   --radius-pill: 9999px;
 
   /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-card: 0 4px 14px rgba(17, 17, 17, 0.06);
-  --shadow-btn: 0 7px 18px rgba(36, 122, 61, 0.2);
-  --shadow-popover: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 2px 8px rgba(24, 29, 23, 0.04);
+  --shadow-card: 0 4px 14px rgba(24, 29, 23, 0.06);
+  --shadow-btn: 0 7px 18px rgba(36, 122, 61, 0.22);
+  --shadow-popover: 0 10px 25px rgba(24, 29, 23, 0.1);
 }
 
 [data-theme='dark'] {
@@ -64,8 +64,8 @@
   
   --foreground-primary: #F7F8F2;
   --foreground-secondary: #B7BCAF;
-  --foreground-muted: #85857C;
-  --foreground-inverse: #111111;
+  --foreground-muted: #858B80;
+  --foreground-inverse: #121611;
   
   --accent-primary: #75D18C;
   --green-deep: #1C2E20;
@@ -86,4 +86,9 @@
   --app-muted: #B7BCAF;
   --app-accent: #75D18C;
   --app-highlight: #FFD866;
+
+  --color-error: #371A1A;
+  --color-error-foreground: #F98080;
+  --color-info: #1E293B;
+  --color-info-foreground: #76A9FA;
 }
