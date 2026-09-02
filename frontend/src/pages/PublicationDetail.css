@@ -1,0 +1,326 @@
+.pubdetail-screen-wrapper {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--cream);
+  min-height: 100%;
+}
+
+.pubdetail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px 14px 20px;
+  background-color: var(--surface-primary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.pubdetail-back-btn, .pubdetail-more-btn {
+  width: 36px;
+  height: 36px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pubdetail-more-btn {
+  background-color: var(--yellow-pale);
+  border: none;
+}
+
+.pubdetail-header-title {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.pubdetail-content {
+  padding: 20px 20px 28px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .pubdetail-content {
+    padding: 36px 32px;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+    gap: 22px;
+  }
+}
+
+.pubdetail-author-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pubdetail-author-avatar {
+  width: 38px;
+  height: 38px;
+  background-color: var(--green-deep);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.author-avatar-text {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.pubdetail-author-copy {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.author-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.author-date {
+  font-size: 11px;
+  color: var(--foreground-muted);
+}
+
+.pubdetail-status-badge {
+  background-color: var(--green-mint);
+  color: var(--green-deep);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.pubdetail-case-title {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.pubdetail-attachment-banner {
+  width: 100%;
+  height: 112px;
+  background: linear-gradient(135deg, var(--green-deep) 0%, #1a6435 100%);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  box-shadow: var(--shadow-sm);
+}
+
+.attachment-badge {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--green-deep);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pubdetail-solution-card {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-sm);
+}
+
+.solution-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.solution-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: var(--green-deep);
+}
+
+.solution-text {
+  font-size: 14px;
+  color: var(--foreground-secondary);
+  line-height: 1.45;
+}
+
+.solution-steps-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.solution-step-item {
+  font-size: 13px;
+  color: var(--foreground-primary);
+  font-weight: 500;
+}
+
+.pubdetail-actions-bar {
+  display: flex;
+  gap: 10px;
+}
+
+.action-pill-btn {
+  flex: 1;
+  height: 40px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground-secondary);
+  transition: all 0.2s ease;
+}
+
+.action-pill-btn.liked {
+  background-color: var(--green-leaf);
+  color: #FFFFFF;
+  border-color: var(--green-leaf);
+}
+
+.action-pill-btn.saved {
+  background-color: var(--yellow-signal);
+  color: var(--ink);
+  border-color: var(--yellow-signal);
+}
+
+.pubdetail-comments-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.comments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.comments-title {
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.comments-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green-leaf);
+  background-color: var(--green-mint);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comment-card {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: var(--shadow-sm);
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.comment-author-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.comment-time {
+  font-size: 10px;
+  color: var(--foreground-muted);
+  margin-left: auto;
+}
+
+.comment-text {
+  font-size: 13px;
+  color: var(--foreground-secondary);
+  line-height: 1.35;
+}
+
+.add-comment-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.comment-input {
+  flex: 1;
+  height: 44px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-input);
+  border-radius: 12px;
+  padding: 0 14px;
+  font-size: 13px;
+  color: var(--foreground-primary);
+}
+
+.comment-submit-btn {
+  height: 44px;
+  padding: 0 16px;
+  background-color: var(--green-deep);
+  color: #FFFFFF;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
