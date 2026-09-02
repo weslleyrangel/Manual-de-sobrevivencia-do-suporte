@@ -1,18 +1,89 @@
 :root {
-  /* Premium Dark Theme */
-  --color-bg: #0f172a;
-  --color-surface: rgba(30, 41, 59, 0.7);
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
-  --color-text-main: #f8fafc;
-  --color-text-muted: #94a3b8;
+  /* Brand & Theme Colors (Design.pen Tokens) */
+  --surface-primary: #FFFFFF;
+  --surface-secondary: #F5F6F1;
+  --surface-inverse: #111111;
   
-  /* Borders & Shadows */
-  --border-radius: 16px;
-  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-  --glass-blur: blur(12px);
+  --foreground-primary: #111111;
+  --foreground-secondary: #4A4A42;
+  --foreground-muted: #85857C;
+  --foreground-inverse: #FFFFFF;
   
+  --accent-primary: #247A3D;
+  --green-deep: #14532D;
+  --green-leaf: #247A3D;
+  --green-mint: #DFF3E4;
+  
+  --yellow-signal: #F4C542;
+  --yellow-pale: #FFF3B8;
+  
+  --ink: #111111;
+  --cream: #FBFAF3;
+  --border-subtle: #E4E5DE;
+  --border-input: #CBCCC9;
+  
+  --app-bg: #FBFAF3;
+  --app-surface: #FFFFFF;
+  --app-text: #111111;
+  --app-muted: #4A4A42;
+  --app-accent: #247A3D;
+  --app-highlight: #F4C542;
+  
+  /* Status Colors */
+  --color-success: #DFE6E1;
+  --color-success-foreground: #004D1A;
+  --color-warning: #E9E3D8;
+  --color-warning-foreground: #804200;
+  --color-error: #E5DCDA;
+  --color-error-foreground: #8C1C00;
+  --color-info: #DFDFE6;
+  --color-info-foreground: #000066;
+
   /* Typography */
-  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Funnel Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Radii */
+  --radius-s: 8px;
+  --radius-m: 12px;
+  --radius-l: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 4px 14px rgba(17, 17, 17, 0.06);
+  --shadow-btn: 0 7px 18px rgba(36, 122, 61, 0.2);
+  --shadow-popover: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --surface-primary: #1C221A;
+  --surface-secondary: #121611;
+  --surface-inverse: #F7F8F2;
+  
+  --foreground-primary: #F7F8F2;
+  --foreground-secondary: #B7BCAF;
+  --foreground-muted: #85857C;
+  --foreground-inverse: #111111;
+  
+  --accent-primary: #75D18C;
+  --green-deep: #1C2E20;
+  --green-leaf: #75D18C;
+  --green-mint: #223526;
+  
+  --yellow-signal: #FFD866;
+  --yellow-pale: #383015;
+  
+  --ink: #F7F8F2;
+  --cream: #121611;
+  --border-subtle: #2B3329;
+  --border-input: #3A4537;
+  
+  --app-bg: #121611;
+  --app-surface: #1C221A;
+  --app-text: #F7F8F2;
+  --app-muted: #B7BCAF;
+  --app-accent: #75D18C;
+  --app-highlight: #FFD866;
 }
