@@ -40,14 +40,10 @@ input, textarea, select {
   display: flex;
   justify-content: center;
   align-items: stretch;
-  background-color: #EAEBE4;
+  background-color: var(--app-bg);
 }
 
-[data-theme='dark'] .app-viewport {
-  background-color: #0A0D0A;
-}
-
-/* Main Container (Responsive: Mobile Canvas to Desktop App) */
+/* Main Container (Mobile Canvas to Desktop Layout) */
 .app-screen-container {
   width: 100%;
   max-width: 480px;
@@ -56,19 +52,24 @@ input, textarea, select {
   display: flex;
   flex-direction: column;
   position: relative;
-  box-shadow: 0 0 35px rgba(0, 0, 0, 0.08);
-  transition: max-width 0.3s ease;
+  transition: max-width 0.25s ease;
 }
 
 /* Desktop Expansion Mode */
 @media (min-width: 1024px) {
+  .app-viewport.desktop-layout {
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--app-bg);
+  }
+
   .app-viewport.desktop-layout .app-screen-container {
-    max-width: 1100px;
-    margin: 24px auto;
-    min-height: calc(100vh - 48px);
-    border-radius: 24px;
-    overflow: hidden;
-    border: 1px solid var(--border-subtle);
+    max-width: 1240px;
+    margin: 0 auto;
+    min-height: calc(100vh - 68px);
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
   }
 }
 
@@ -76,33 +77,22 @@ input, textarea, select {
 .screen-scroll-body {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 90px; /* Space for BottomNav */
+  padding-bottom: 90px; /* Space for Mobile BottomNav */
+}
+
+@media (min-width: 1024px) {
+  .screen-scroll-body {
+    padding-bottom: 48px; /* Clean desktop padding without artificial bottom nav spacing */
+  }
 }
 
 .no-bottom-nav .screen-scroll-body {
   padding-bottom: 24px;
 }
 
-/* Desktop layout split */
 @media (min-width: 1024px) {
-  .desktop-grid-layout {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    min-height: 100%;
-  }
-
-  .desktop-sidebar {
-    background-color: var(--surface-primary);
-    border-right: 1px solid var(--border-subtle);
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .desktop-main-content {
-    padding: 32px 40px;
-    overflow-y: auto;
+  .no-bottom-nav .screen-scroll-body {
+    padding-bottom: 48px;
   }
 }
 
@@ -124,15 +114,15 @@ input, textarea, select {
 
 /* Interactive elements */
 .pressable {
-  transition: transform 0.12s ease, opacity 0.12s ease;
+  transition: transform 0.12s ease, opacity 0.12s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .pressable:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .pressable:hover {
-  opacity: 0.92;
+  opacity: 0.95;
 }
 
 /* Form Styles */

@@ -1,11 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AppLayout } from '../components/layout/AppLayout';
 import { Icon } from '../components/common/Icons';
+import { api } from '../services/api';
 import './Search.css';
 
+const DEFAULT_ARTICLES = [
+  {
+    id: '1',
+    title: 'Como lidar com um cliente irritado',
+    category: 'Atendimento',
+    snippet: 'Dicas práticas de empatia e desescalonamento para atendimentos de alta tensão.',
+    views_count: 1240
+  },
+  {
+    id: '2',
+    title: '5 frases para desarmar uma conversa difícil',
+    category: 'Atendimento',
+    snippet: 'Substitua termos reativos por acordos claros e mantenha o controle do chamado.',
+    views_count: 850
+  },
+  {
+    id: '3',
+    title: 'Checklist: início de turno e conferência de filas',
+    category: 'Processos',
+    snippet: 'Passo a passo matinal para organizar seus chamados e priorizar chamados críticos.',
+    views_count: 670
+  },
+  {
+    id: '4',
+    title: 'Guia de troubleshooting para falha no login / SSO',
+    category: 'Ferramentas',
+    snippet: 'Como diagnosticar rapidamente problemas de autenticação e cookies.',
+    views_count: 890
+  }
+];
+
 export const Search = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const initialCategory = searchParams.get('category') || '';
   
   const [query, setQuery] = useState('');
@@ -15,44 +47,33 @@ export const Search = () => {
     'Acesso bloqueado',
     'Resposta para atraso'
   ]);
+  const [remoteResults, setRemoteResults] = useState(null);
 
   const topics = [
-    { name: 'Todos', bg: 'var(--surface-primary)' },
-    { name: 'Atendimento', bg: 'var(--green-mint)', text: 'var(--green-deep)' },
-    { name: 'Processos', bg: 'var(--yellow-pale)', text: 'var(--green-deep)' },
-    { name: 'Ferramentas', bg: '#FFFFFF', text: 'var(--green-deep)', border: true }
+    { name: 'Todos', type: 'all' },
+    { name: 'Atendimento', type: 'mint' },
+    { name: 'Processos', type: 'yellow' },
+    { name: 'Ferramentas', type: 'tool' }
   ];
 
-  const allArticles = [
-    {
-      id: '1',
-      title: 'Como lidar com um cliente irritado',
-      category: 'Atendimento',
-      snippet: 'Dicas práticas de empatia e desescalonamento para atendimentos de alta tensão.',
-      reads: '1.2k visualizações'
-    },
-    {
-      id: '2',
-      title: '5 frases para desarmar uma conversa difícil',
-      category: 'Atendimento',
-      snippet: 'Substitua termos reativos por acordos claros e mantenha o controle do chamado.',
-      reads: '850 visualizações'
-    },
-    {
-      id: '3',
-      title: 'Checklist: início de turno e conferência de filas',
-      category: 'Processos',
-      snippet: 'Passo a passo matinal para organizar seus chamados e priorizar chamados críticos.',
-      reads: '640 visualizações'
-    },
-    {
-      id: '4',
-      title: 'Guia de troubleshooting para falha no login / SSO',
-      category: 'Ferramentas',
-      snippet: 'Como diagnosticar rapidamente problemas de autenticação e cookies.',
-      reads: '490 visualizações'
+  useEffect(() => {
+    let isMounted = true;
+    if (query.trim()) {
+      api.search(query.trim())
+        .then((res) => {
+          if (isMounted && res && res.length > 0) {
+            setRemoteResults(res);
+          }
+        })
+        .catch(() => {});
+    } else {
+      setRemoteResults(null);
     }
-  ];
+
+    return () => {
+      isMounted = false;
+    };
+  }, [query]);
 
   const handleClearHistory = () => {
     setRecentSearches([]);
@@ -62,13 +83,16 @@ export const Search = () => {
     setQuery(term);
   };
 
-  const filteredArticles = allArticles.filter((item) => {
+  // Resultados combinados: API real ou filtro local imediato
+  const localFiltered = DEFAULT_ARTICLES.filter((item) => {
     const matchesTopic = activeTopic === 'Todos' || item.category.toLowerCase() === activeTopic.toLowerCase();
     const matchesQuery = query.trim() === '' || 
       item.title.toLowerCase().includes(query.toLowerCase()) || 
       item.snippet.toLowerCase().includes(query.toLowerCase());
     return matchesTopic && matchesQuery;
   });
+
+  const displayArticles = remoteResults && remoteResults.length > 0 ? remoteResults : localFiltered;
 
   return (
     <AppLayout>
@@ -95,7 +119,7 @@ export const Search = () => {
 
           {/* Search Query Input */}
           <div className="search-input-wrapper">
-            <Icon name="search" size={20} color="var(--green-deep)" />
+            <Icon name="search" size={20} color="var(--green-leaf)" />
             <input
               type="text"
               className="search-input-field"
@@ -121,12 +145,12 @@ export const Search = () => {
             <section className="search-results-section animate-fade">
               <div className="search-section-header">
                 <h2 className="search-section-title">
-                  Resultados ({filteredArticles.length})
+                  Resultados ({displayArticles.length})
                 </h2>
               </div>
               <div className="search-results-list">
-                {filteredArticles.length > 0 ? (
-                  filteredArticles.map((article) => (
+                {displayArticles.length > 0 ? (
+                  displayArticles.map((article) => (
                     <Link
                       key={article.id}
                       to={`/publication/${article.id}`}
@@ -134,8 +158,10 @@ export const Search = () => {
                     >
                       <div className="result-category-tag">{article.category}</div>
                       <h3 className="result-title">{article.title}</h3>
-                      <p className="result-snippet">{article.snippet}</p>
-                      <span className="result-meta">{article.reads}</span>
+                      <p className="result-snippet">{article.snippet || article.description}</p>
+                      <span className="result-meta">
+                        Por {article.author_name || 'Weslley Rangel'} · {article.views_count || 120} visualizações
+                      </span>
                     </Link>
                   ))
                 ) : (
@@ -192,12 +218,7 @@ export const Search = () => {
                         key={topic.name}
                         type="button"
                         onClick={() => setActiveTopic(isSelected ? 'Todos' : topic.name)}
-                        className={`topic-pill pressable ${isSelected ? 'selected' : ''}`}
-                        style={{
-                          backgroundColor: isSelected ? 'var(--green-deep)' : topic.bg,
-                          color: isSelected ? '#FFFFFF' : topic.text || 'var(--ink)',
-                          border: topic.border ? '1px solid var(--border-subtle)' : 'none'
-                        }}
+                        className={`topic-pill pill-${topic.type} pressable ${isSelected ? 'selected' : ''}`}
                       >
                         {topic.name}
                       </button>
@@ -214,7 +235,7 @@ export const Search = () => {
 
                 <Link to="/publication/2" className="suggested-card pressable">
                   <div className="suggested-icon-box">
-                    <Icon name="message-circle-heart" size={22} color="var(--ink)" />
+                    <Icon name="message-circle-heart" size={24} color="var(--badge-yellow-text)" />
                   </div>
                   <div className="suggested-copy">
                     <span className="suggested-category">ATENDIMENTO</span>

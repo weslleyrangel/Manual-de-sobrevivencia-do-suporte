@@ -1,49 +1,68 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import { AppLayout } from '../components/layout/AppLayout';
 import { Icon } from '../components/common/Icons';
+import { api } from '../services/api';
 import './MyPublications.css';
 
 export const MyPublications = () => {
-  const [activeTab, setActiveTab] = useState('Todas');
   const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+  const user = authContext?.user;
 
-  const [publications] = useState([
+  const [activeTab, setActiveTab] = useState('all');
+  const [publications, setPublications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fallbackPubs = [
     {
       id: '1',
       title: 'Como desescalar uma conversa difícil',
-      tag: 'Boas práticas',
-      tagType: 'mint',
-      status: 'published',
-      date: 'Publicado há 2 dias',
-      likes: 18,
-      comments: 2
+      category: 'Atendimento',
+      is_draft: false,
+      likes_count: 24,
+      views_count: 1240,
+      created_at: 'Hoje'
     },
     {
       id: '2',
-      title: 'Checklist: início de turno e conferência de filas',
-      tag: 'Rotinas',
-      tagType: 'yellow',
-      status: 'published',
-      date: 'Publicado há 1 semana',
-      likes: 14,
-      comments: 5
-    },
-    {
-      id: '3',
       title: 'Atalhos de teclado mais úteis no Zendesk / Chat',
-      tag: 'Rascunho',
-      tagType: 'draft',
-      status: 'draft',
-      date: 'Salvo ontem às 17:30',
-      likes: 0,
-      comments: 0
+      category: 'Ferramentas',
+      is_draft: true,
+      likes_count: 0,
+      views_count: 1,
+      created_at: 'Ontem'
     }
-  ]);
+  ];
 
-  const filtered = publications.filter((p) => {
-    if (activeTab === 'Rascunhos') return p.status === 'draft';
-    if (activeTab === 'Publicadas') return p.status === 'published';
+  useEffect(() => {
+    let isMounted = true;
+    api.getProblems({ author_id: user?.id || 1, limit: 50 })
+      .then((data) => {
+        if (isMounted) {
+          if (data && data.length > 0) {
+            setPublications(data);
+          } else {
+            setPublications(fallbackPubs);
+          }
+        }
+      })
+      .catch(() => {
+        if (isMounted) setPublications(fallbackPubs);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => { isMounted = false; };
+  }, [user]);
+
+  const currentList = publications.length > 0 ? publications : fallbackPubs;
+
+  const filteredPubs = currentList.filter((pub) => {
+    if (activeTab === 'drafts') return pub.is_draft;
+    if (activeTab === 'published') return !pub.is_draft;
     return true;
   });
 
@@ -62,72 +81,85 @@ export const MyPublications = () => {
             onClick={() => navigate('/new-publication')}
             aria-label="Nova publicação"
           >
-            <Icon name="plus" size={19} color="var(--ink)" />
+            <Icon name="plus" size={19} color="var(--badge-yellow-text)" />
           </button>
         </header>
 
         {/* Content */}
         <div className="mypubs-content">
           <div className="mypubs-intro">
-            <h1 className="mypubs-title">Minhas publicações</h1>
-            <p className="mypubs-subtitle">Seu conhecimento deixa o suporte mais forte.</p>
+            <div className="mypubs-intro-text">
+              <h1 className="mypubs-title">Minhas publicações</h1>
+              <p className="mypubs-subtitle">Gerencie os tutoriais e procedimentos registrados por você</p>
+            </div>
           </div>
 
-          {/* Filter Pills */}
+          {/* Filter Tabs */}
           <div className="mypubs-filter-row">
-            {['Todas', 'Rascunhos', 'Publicadas'].map((tab) => {
-              const isSelected = activeTab === tab;
-              return (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={`mypubs-tab-btn pressable ${isSelected ? 'active' : ''}`}
-                >
-                  {tab}
-                </button>
-              );
-            })}
+            <button
+              type="button"
+              className={`mypubs-tab-btn ${activeTab === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveTab('all')}
+            >
+              Todas
+            </button>
+            <button
+              type="button"
+              className={`mypubs-tab-btn ${activeTab === 'published' ? 'active' : ''}`}
+              onClick={() => setActiveTab('published')}
+            >
+              Publicadas
+            </button>
+            <button
+              type="button"
+              className={`mypubs-tab-btn ${activeTab === 'drafts' ? 'active' : ''}`}
+              onClick={() => setActiveTab('drafts')}
+            >
+              Rascunhos
+            </button>
           </div>
 
-          {/* Publications List */}
+          {/* Publications Grid */}
           <div className="mypubs-list">
-            {filtered.map((item) => (
-              <div
-                key={item.id}
-                className="mypubs-card pressable"
-                onClick={() => navigate(`/publication/${item.id}`)}
-              >
-                <div className="mypubs-card-header">
-                  <span className={`mypubs-tag tag-${item.tagType}`}>
-                    {item.tag}
-                  </span>
-                  <button
-                    type="button"
-                    className="mypubs-menu-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      alert('Opções da publicação: Editar, Excluir ou Compartilhar.');
-                    }}
-                    aria-label="Mais opções"
-                  >
-                    <Icon name="ellipsis" size={18} color="var(--foreground-muted)" />
-                  </button>
-                </div>
-
-                <h2 className="mypubs-card-title">{item.title}</h2>
-
-                <div className="mypubs-card-footer">
-                  <span className="mypubs-card-date">{item.date}</span>
-                  {item.status === 'published' && (
+            {filteredPubs.length > 0 ? (
+              filteredPubs.map((pub) => (
+                <div
+                  key={pub.id}
+                  className="mypubs-card pressable"
+                  onClick={() => navigate(`/publication/${pub.id}`)}
+                >
+                  <div className="mypubs-card-header">
+                    <span className={`mypubs-tag ${pub.is_draft ? 'tag-draft' : 'tag-mint'}`}>
+                      {pub.is_draft ? 'RASCUNHO' : (pub.category?.toUpperCase() || 'ATENDIMENTO')}
+                    </span>
+                    <button
+                      type="button"
+                      className="mypubs-menu-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      aria-label="Opções"
+                    >
+                      <Icon name="ellipsis" size={16} color="var(--foreground-muted)" />
+                    </button>
+                  </div>
+                  <h3 className="mypubs-card-title">{pub.title}</h3>
+                  <div className="mypubs-card-footer">
+                    <span className="mypubs-card-date">
+                      {pub.created_at ? (typeof pub.created_at === 'string' && pub.created_at.length < 10 ? pub.created_at : new Date(pub.created_at).toLocaleDateString('pt-BR')) : 'Hoje'}
+                    </span>
                     <div className="mypubs-card-metrics">
-                      <span>👍 {item.likes}</span>
-                      <span>💬 {item.comments}</span>
+                      <span>👍 {pub.likes_count || 0}</span>
+                      <span>👁️ {pub.views_count || 1}</span>
                     </div>
-                  )}
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="no-results-box" style={{ gridColumn: '1 / -1' }}>
+                <p>Nenhuma publicação encontrada nesta aba.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

@@ -41,7 +41,7 @@
 .mypubs-new-btn {
   width: 38px;
   height: 38px;
-  background-color: var(--yellow-pale);
+  background-color: var(--badge-yellow-bg);
   border-radius: 12px;
   display: flex;
   justify-content: center;
@@ -49,86 +49,112 @@
 }
 
 .mypubs-content {
-  padding: 20px 20px 24px 20px;
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 22px;
 }
 
 @media (min-width: 1024px) {
   .mypubs-content {
-    padding: 36px 32px;
-    max-width: 800px;
-    margin: 0 auto;
-    width: 100%;
-    gap: 22px;
+    padding: 36px 0;
+    gap: 28px;
   }
 }
 
 .mypubs-intro {
   display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.mypubs-intro-text {
+  display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .mypubs-title {
   font-family: var(--font-heading);
-  font-size: 27px;
+  font-size: 30px;
   font-weight: 700;
   color: var(--ink);
 }
 
+@media (min-width: 1024px) {
+  .mypubs-title {
+    font-size: 36px;
+  }
+}
+
 .mypubs-subtitle {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--foreground-secondary);
 }
 
 .mypubs-filter-row {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .mypubs-tab-btn {
-  height: 34px;
-  padding: 0 16px;
-  border-radius: 17px;
-  font-size: 12px;
+  height: 38px;
+  padding: 0 20px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
   font-weight: 600;
-  background-color: #FFFFFF;
+  background-color: var(--surface-primary);
   border: 1px solid var(--border-subtle);
   color: var(--foreground-secondary);
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.mypubs-tab-btn:hover {
+  border-color: var(--accent-primary);
 }
 
 .mypubs-tab-btn.active {
   background-color: var(--green-deep);
-  color: var(--yellow-signal);
+  color: #FFFFFF;
   border-color: var(--green-deep);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Publications Grid for Desktop */
 .mypubs-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 4px;
+  gap: 14px;
+}
+
+@media (min-width: 1024px) {
+  .mypubs-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
 }
 
 .mypubs-card {
-  background-color: #FFFFFF;
+  background-color: var(--surface-primary);
   border: 1px solid var(--border-subtle);
-  border-radius: 16px;
-  padding: 14px 16px;
+  border-radius: 18px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 12px;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mypubs-card:hover {
   border-color: var(--accent-primary);
   box-shadow: var(--shadow-card);
+  transform: translateY(-2px);
 }
 
 .mypubs-card-header {
@@ -140,41 +166,51 @@
 .mypubs-tag {
   font-size: 10px;
   font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
 }
 
 .mypubs-tag.tag-mint {
-  background-color: var(--green-mint);
-  color: var(--green-deep);
+  background-color: var(--badge-mint-bg);
+  color: var(--badge-mint-text);
 }
 
 .mypubs-tag.tag-yellow {
-  background-color: var(--yellow-pale);
-  color: var(--green-deep);
+  background-color: var(--badge-yellow-bg);
+  color: var(--badge-yellow-text);
 }
 
 .mypubs-tag.tag-draft {
-  background-color: var(--surface-secondary);
-  color: var(--foreground-muted);
+  background-color: var(--badge-draft-bg);
+  color: var(--badge-draft-text);
 }
 
 .mypubs-menu-btn {
   padding: 4px;
+  border-radius: 6px;
+  color: var(--foreground-muted);
+  transition: background-color 0.2s ease;
+}
+
+.mypubs-menu-btn:hover {
+  background-color: var(--surface-secondary);
 }
 
 .mypubs-card-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--ink);
-  line-height: 1.25;
+  line-height: 1.35;
 }
 
 .mypubs-card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 4px;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .mypubs-card-date {
@@ -184,7 +220,8 @@
 
 .mypubs-card-metrics {
   display: flex;
-  gap: 10px;
-  font-size: 11px;
-  color: var(--foreground-muted);
+  gap: 12px;
+  font-size: 12px;
+  color: var(--foreground-secondary);
+  font-weight: 500;
 }

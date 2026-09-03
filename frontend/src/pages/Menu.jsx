@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { AppLayout } from '../components/layout/AppLayout';
 import { Icon } from '../components/common/Icons';
 import './Menu.css';
 
 export const Menu = () => {
   const { user, logout } = useContext(AuthContext);
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const [darkMode, setDarkMode] = useState(() => {
@@ -54,7 +56,7 @@ export const Menu = () => {
         <header className="menu-mobile-header">
           <div className="menu-brand">
             <div className="menu-brand-icon" />
-            <span className="menu-brand-name">Manual de Sobrevivência</span>
+            <span className="menu-brand-name">Manual do Suporte</span>
           </div>
         </header>
 
@@ -111,7 +113,7 @@ export const Menu = () => {
 
               <button
                 type="button"
-                onClick={() => alert('Central de Ajuda: Em caso de dúvidas técnicas, consulte seu líder ou canal interno #suporte-ajuda.')}
+                onClick={() => showToast('Central de Ajuda: Em caso de dúvidas técnicas, consulte seu líder ou canal interno #suporte-ajuda.', 'info')}
                 className="menu-item-card pressable"
               >
                 <div className="menu-item-icon-box box-yellow">

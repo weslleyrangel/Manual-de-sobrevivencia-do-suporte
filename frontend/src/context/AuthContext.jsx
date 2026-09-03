@@ -7,9 +7,8 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost:3000';
-
     useEffect(() => {
+        let isMounted = true;
         const checkAuth = async () => {
             try {
                 const response = await fetch('/api/v1/auth/me', {
@@ -17,25 +16,44 @@ export const AuthProvider = ({ children }) => {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    setIsAuthenticated(true);
-                    setUser(data.user);
+                    if (isMounted) {
+                        setIsAuthenticated(true);
+                        setUser(data.user);
+                    }
                 } else {
+                    if (isMounted) {
+                        setIsAuthenticated(false);
+                        setUser(null);
+                    }
+                }
+            } catch (err) {
+                if (isMounted) {
                     setIsAuthenticated(false);
                     setUser(null);
                 }
-            } catch (err) {
-                setIsAuthenticated(false);
-                setUser(null);
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
         checkAuth();
-    }, [API_URL]);
+        return () => { isMounted = false; };
+    }, []);
 
-    const login = () => {
+    const login = (userData) => {
         setIsAuthenticated(true);
+        if (userData) {
+            setUser(userData);
+        } else if (!user) {
+            setUser({
+                id: 1,
+                name: 'Weslley Rangel',
+                email: 'admin@suporte.com',
+                role: 'Especialista em Suporte N2'
+            });
+        }
     };
 
     const logout = async () => {
@@ -45,7 +63,7 @@ export const AuthProvider = ({ children }) => {
                 credentials: 'include'
             });
         } catch (e) {
-            console.error('Logout error', e);
+            console.warn('Logout offline', e);
         }
         setIsAuthenticated(false);
         setUser(null);

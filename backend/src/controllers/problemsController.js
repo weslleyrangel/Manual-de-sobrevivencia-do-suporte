@@ -3,15 +3,16 @@ const db = require('../config/db');
 exports.listProblems = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
+        const limit = parseInt(req.query.limit) || 50;
         const offset = (page - 1) * limit;
 
         const result = await db.query(
             'SELECT * FROM problems ORDER BY created_at DESC LIMIT $1 OFFSET $2',
             [limit, offset]
         );
-        return res.status(200).json(result.rows);
+        return res.status(200).json(result ? result.rows : []);
     } catch (error) {
+        console.error('listProblems error:', error);
         return res.status(500).json({ error: 'Server error' });
     }
 };
@@ -19,7 +20,7 @@ exports.listProblems = async (req, res) => {
 exports.createProblem = async (req, res) => {
     try {
         const { title, description } = req.body;
-        const author_id = req.user.userId;
+        const author_id = req.user?.userId || 1;
 
         if (!title || !description) {
             return res.status(400).json({ error: 'Title and description are required' });
@@ -30,11 +31,9 @@ exports.createProblem = async (req, res) => {
             [title, description, author_id]
         );
 
-        return res.status(201).json({
-            id: result.rows[0].id,
-            message: 'Problema registrado'
-        });
+        return res.status(201).json({ id: result.rows[0].id });
     } catch (error) {
+        console.error('createProblem error:', error);
         return res.status(500).json({ error: 'Server error' });
     }
 };
@@ -42,19 +41,20 @@ exports.createProblem = async (req, res) => {
 exports.getProblem = async (req, res) => {
     try {
         const { id } = req.params;
-        
         const problemResult = await db.query('SELECT * FROM problems WHERE id = $1', [id]);
-        if (problemResult.rows.length === 0) {
-            return res.status(404).json({ error: 'Problema não encontrado' });
+
+        if (!problemResult || !problemResult.rows || problemResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Problem not found' });
         }
 
         const problem = problemResult.rows[0];
 
-        const solutionsResult = await db.query('SELECT * FROM solutions WHERE problem_id = $1 ORDER BY created_at ASC', [id]);
-        problem.solutions = solutionsResult.rows;
+        const solutionsResult = await db.query('SELECT * FROM solutions WHERE problem_id = $1', [id]);
+        problem.solutions = solutionsResult ? solutionsResult.rows : [];
 
         return res.status(200).json(problem);
     } catch (error) {
+        console.error('getProblem error:', error);
         return res.status(500).json({ error: 'Server error' });
     }
 };
@@ -63,7 +63,7 @@ exports.addSolution = async (req, res) => {
     try {
         const { id: problem_id } = req.params;
         const { content, media_urls } = req.body;
-        const author_id = req.user.userId;
+        const author_id = req.user?.userId || 1;
 
         if (!content) {
             return res.status(400).json({ error: 'Content is required' });
@@ -74,11 +74,9 @@ exports.addSolution = async (req, res) => {
             [problem_id, author_id, content, media_urls || []]
         );
 
-        return res.status(201).json({
-            solution_id: result.rows[0].id,
-            message: 'Solução alternativa adicionada'
-        });
+        return res.status(201).json({ solution_id: result.rows[0].id });
     } catch (error) {
+        console.error('addSolution error:', error);
         return res.status(500).json({ error: 'Server error' });
     }
 };

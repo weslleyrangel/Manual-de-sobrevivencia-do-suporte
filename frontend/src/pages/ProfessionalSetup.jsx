@@ -43,7 +43,6 @@ export const ProfessionalSetup = () => {
         navigate('/');
       } else {
         const data = await response.json().catch(() => ({}));
-        // If error response from server, handle or fallback
         if (data.message) {
           setError(data.message);
         } else {
@@ -57,6 +56,7 @@ export const ProfessionalSetup = () => {
       if (login) login();
       navigate('/');
     } finally {
+      sessionStorage.removeItem('register_draft');
       setLoading(false);
     }
   };

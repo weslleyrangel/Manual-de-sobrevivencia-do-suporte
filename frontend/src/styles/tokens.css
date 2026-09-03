@@ -1,43 +1,54 @@
 :root {
-  /* Opção 1: Guia de Campo & Serenidade (UX Refined Tokens) */
+  /* Opção 1: Guia de Campo & Serenidade (Light Mode) */
   --surface-primary: #FFFFFF;
-  --surface-secondary: #F5F6F1;
-  --surface-inverse: #181D17;
+  --surface-secondary: #F6F8FA;
+  --surface-tertiary: #EAEFF5;
+  --surface-inverse: #0D1117;
   
-  --foreground-primary: #181D17;
-  --foreground-secondary: #4A4E46;
-  --foreground-muted: #787D74;
+  --foreground-primary: #1F2328;
+  --foreground-secondary: #475467;
+  --foreground-muted: #667085;
   --foreground-inverse: #FFFFFF;
   
-  --accent-primary: #247A3D;
+  --accent-primary: #15803D;
   --green-deep: #14532D;
-  --green-leaf: #247A3D;
-  --green-mint: #DFF3E4;
+  --green-leaf: #16A34A;
+  --green-mint: #DCFCE7;
   
-  --yellow-signal: #F4C542;
-  --yellow-pale: #FFF3B8;
+  --yellow-signal: #F59E0B;
+  --yellow-pale: #FEF3C7;
   
-  --ink: #181D17;
-  --cream: #FBFAF3;
-  --border-subtle: #E5E7DF;
-  --border-input: #D2D6CC;
+  --ink: #1F2328;
+  --cream: #F8FAFC;
+  --border-subtle: #E2E8F0;
+  --border-input: #CBD5E1;
+  --border-strong: #94A3B8;
   
-  --app-bg: #FBFAF3;
+  --app-bg: #F8FAFC;
   --app-surface: #FFFFFF;
-  --app-text: #181D17;
-  --app-muted: #4A4E46;
-  --app-accent: #247A3D;
-  --app-highlight: #F4C542;
+  --app-text: #1F2328;
+  --app-muted: #475467;
+  --app-accent: #15803D;
+  --app-highlight: #F59E0B;
   
+  /* Semantic Badges Tokens */
+  --badge-mint-bg: #DCFCE7;
+  --badge-mint-text: #15803D;
+  --badge-yellow-bg: #FEF3C7;
+  --badge-yellow-text: #B45309;
+  --badge-draft-bg: #F1F5F9;
+  --badge-draft-text: #475569;
+
   /* Status Colors */
-  --color-success: #DFE6E1;
-  --color-success-foreground: #004D1A;
-  --color-warning: #E9E3D8;
-  --color-warning-foreground: #804200;
-  --color-error: #FDE8E8;
-  --color-error-foreground: #9B1C1C;
-  --color-info: #E1EFFE;
-  --color-info-foreground: #1E429F;
+  --color-success: #DEF7EC;
+  --color-success-foreground: #03543F;
+  --color-warning: #FEF08A;
+  --color-warning-foreground: #713F12;
+  --color-error: #FEE2E2;
+  --color-error-background: #FEE2E2;
+  --color-error-foreground: #991B1B;
+  --color-info: #E0F2FE;
+  --color-info-foreground: #0369A1;
 
   /* Typography */
   --font-heading: 'Funnel Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -51,44 +62,60 @@
   --radius-pill: 9999px;
 
   /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(24, 29, 23, 0.04);
-  --shadow-card: 0 4px 14px rgba(24, 29, 23, 0.06);
-  --shadow-btn: 0 7px 18px rgba(36, 122, 61, 0.22);
-  --shadow-popover: 0 10px 25px rgba(24, 29, 23, 0.1);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-btn: 0 4px 14px rgba(21, 128, 61, 0.25);
+  --shadow-popover: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 [data-theme='dark'] {
-  --surface-primary: #1C221A;
-  --surface-secondary: #121611;
-  --surface-inverse: #F7F8F2;
+  /* Slate Obsidian & Emerald Dark Mode (Modern Pro UI) */
+  --surface-primary: #161B22;
+  --surface-secondary: #21262D;
+  --surface-tertiary: #30363D;
+  --surface-inverse: #F0F6FC;
   
-  --foreground-primary: #F7F8F2;
-  --foreground-secondary: #B7BCAF;
-  --foreground-muted: #858B80;
-  --foreground-inverse: #121611;
+  --foreground-primary: #F0F6FC;
+  --foreground-secondary: #C9D1D9;
+  --foreground-muted: #8B949E;
+  --foreground-inverse: #0D1117;
   
-  --accent-primary: #75D18C;
-  --green-deep: #1C2E20;
-  --green-leaf: #75D18C;
-  --green-mint: #223526;
+  --accent-primary: #2EA043;
+  --green-deep: #0D2818;
+  --green-leaf: #3FB950;
+  --green-mint: #163820;
   
-  --yellow-signal: #FFD866;
-  --yellow-pale: #383015;
+  --yellow-signal: #E3B341;
+  --yellow-pale: #34280B;
   
-  --ink: #F7F8F2;
-  --cream: #121611;
-  --border-subtle: #2B3329;
-  --border-input: #3A4537;
+  --ink: #F0F6FC;
+  --cream: #0D1117;
+  --border-subtle: #30363D;
+  --border-input: #38414E;
+  --border-strong: #484F58;
   
-  --app-bg: #121611;
-  --app-surface: #1C221A;
-  --app-text: #F7F8F2;
-  --app-muted: #B7BCAF;
-  --app-accent: #75D18C;
-  --app-highlight: #FFD866;
+  --app-bg: #0D1117;
+  --app-surface: #161B22;
+  --app-text: #F0F6FC;
+  --app-muted: #8B949E;
+  --app-accent: #3FB950;
+  --app-highlight: #E3B341;
 
-  --color-error: #371A1A;
-  --color-error-foreground: #F98080;
-  --color-info: #1E293B;
-  --color-info-foreground: #76A9FA;
+  /* Clean High-Tech Badges for Dark Mode */
+  --badge-mint-bg: rgba(46, 160, 67, 0.18);
+  --badge-mint-text: #56D364;
+  --badge-yellow-bg: rgba(227, 179, 65, 0.18);
+  --badge-yellow-text: #F2CC60;
+  --badge-draft-bg: #21262D;
+  --badge-draft-text: #C9D1D9;
+
+  --color-error: #3C1E1E;
+  --color-error-background: #4C1D1D;
+  --color-error-foreground: #FFA198;
+  --color-info: #172554;
+  --color-info-foreground: #79C0FF;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-btn: 0 4px 14px rgba(0, 0, 0, 0.6);
 }
