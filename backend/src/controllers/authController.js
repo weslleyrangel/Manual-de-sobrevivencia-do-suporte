@@ -80,7 +80,17 @@ exports.login = async (req, res) => {
         }
 
         // Generate token
-        const token = jwt.sign({ userId: user.id, name: user.name, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
+        const token = jwt.sign(
+            { 
+                userId: user.id, 
+                name: user.name, 
+                email: user.email, 
+                role: user.role,
+                isVerified: user.is_verified 
+            }, 
+            JWT_SECRET, 
+            { expiresIn: '1d' }
+        );
 
         res.cookie('jwt', token, {
             httpOnly: true,

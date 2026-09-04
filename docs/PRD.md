@@ -78,4 +78,5 @@ npm run lint                    # Verificação de código
 > 1. **Infraestrutura:** Setup próprio via Docker (Node.js + PostgreSQL + React).
 > 2. **Metodologia:** Test-Driven Development (TDD) será estritamente seguido em todos os módulos.
 > 3. **Autenticação:** O login será feito através de um cadastro próprio (e-mail e senha) armazenado no banco de dados.
-> 4. **Fluxo de Aprovação:** Soluções publicadas por técnicos N1 e N2 ficam disponíveis imediatamente no catálogo, sem necessidade de aprovação de N3.
+> 4. **Modelo de Colaboração:** Estilo Stack Overflow, onde qualquer usuário verificado pode publicar dúvidas e sugerir soluções alternativas para qualquer problema registrado no catálogo.
+> 5. **Cargos vs. Permissões (RBAC/ABAC):** N1, N2 e N3 são apenas cargos informativos (badging no perfil do usuário). A decisão de arquitetura técnica de autorização está registrada em [ADP-002-Hybrid-RBAC-ABAC-Authorization.md](file:///c:/Users/Admin_2/Desktop/Manual%20do%20Suporte/Manual-de-sobrevivencia-do-suporte/docs/ADP-002-Hybrid-RBAC-ABAC-Authorization.md), detalhada em [RBAC_ABAC_MODEL.md](file:///c:/Users/Admin_2/Desktop/Manual%20do%20Suporte/Manual-de-sobrevivencia-do-suporte/docs/RBAC_ABAC_MODEL.md) e [RBAC_ABAC_USE_CASES.md](file:///c:/Users/Admin_2/Desktop/Manual%20do%20Suporte/Manual-de-sobrevivencia-do-suporte/docs/RBAC_ABAC_USE_CASES.md).

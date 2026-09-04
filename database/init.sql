@@ -5,8 +5,9 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255) DEFAULT 'Analista de Suporte',
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(100) DEFAULT 'Analista de Suporte · Nível 1',
-    is_verified BOOLEAN DEFAULT TRUE,
+    role VARCHAR(50) DEFAULT 'MEMBER',
+    job_title VARCHAR(255) DEFAULT 'Analista de Suporte · Nível 1',
+    is_verified BOOLEAN DEFAULT FALSE,
     verification_token VARCHAR(255),
     token_expires_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -43,3 +44,13 @@ CREATE TABLE IF NOT EXISTS solutions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_solutions_problem ON solutions(problem_id);
+
+ALTER TABLE problems 
+    ADD COLUMN IF NOT EXISTS accepted_solution_id INTEGER REFERENCES solutions(id) ON DELETE SET NULL,
+    ADD COLUMN IF NOT EXISTS closing_reason TEXT,
+    ADD COLUMN IF NOT EXISTS closed_at TIMESTAMP;
+
+-- Índice GIN otimizado para busca textual rápida
+CREATE INDEX IF NOT EXISTS idx_problems_fts ON problems 
+    USING gin(to_tsvector('portuguese', coalesce(title, '') || ' ' || coalesce(description, '') || ' ' || coalesce(category, '')));
+

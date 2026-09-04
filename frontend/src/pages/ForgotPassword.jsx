@@ -41,7 +41,7 @@ export const ForgotPassword = () => {
           </div>
           <h1 className="forgot-heading">Recuperar acesso</h1>
           <p className="forgot-subheading">
-            Informe seu e-mail de trabalho para enviarmos instruções de redefinição de senha.
+            Informe seu e-mail para enviarmos as instruções de redefinição de senha.
           </p>
         </div>
 
@@ -65,13 +65,13 @@ export const ForgotPassword = () => {
         ) : (
           <form onSubmit={handleSubmit} className="forgot-form">
             <div className="form-group">
-              <label className="form-label" htmlFor="forgot-email">E-mail cadastrado</label>
+              <label className="form-label" htmlFor="forgot-email">E-mail</label>
               <div className="form-input-box">
                 <input
                   id="forgot-email"
                   type="email"
                   required
-                  placeholder="voce@empresa.com"
+                  placeholder="seu.email@exemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   autoFocus

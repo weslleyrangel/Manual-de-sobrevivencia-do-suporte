@@ -122,6 +122,46 @@ export const api = {
         return res.json();
     },
 
+    async acceptSolution(problemId, solutionId) {
+        const res = await fetch(`${API_BASE}/problems/${problemId}/solutions/${solutionId}/accept`, {
+            method: 'PUT',
+            credentials: 'include'
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || err.error || 'Erro ao aceitar solução');
+        }
+        return res.json();
+    },
+
+    async editSolution(problemId, solutionId, content) {
+        const res = await fetch(`${API_BASE}/problems/${problemId}/solutions/${solutionId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ content })
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || err.error || 'Erro ao editar solução');
+        }
+        return res.json();
+    },
+
+    async closeProblemAdmin(problemId, reason) {
+        const res = await fetch(`${API_BASE}/problems/${problemId}/close-admin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ reason })
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || err.error || 'Erro ao encerrar pergunta administrativamente');
+        }
+        return res.json();
+    },
+
     // 3. Busca Full-Text
     async search(query) {
         try {

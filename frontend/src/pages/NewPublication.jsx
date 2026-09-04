@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
+import { AuthContext } from '../context/AuthContext';
 import { AppLayout } from '../components/layout/AppLayout';
 import { Icon } from '../components/common/Icons';
 import { api } from '../services/api';
@@ -9,6 +10,7 @@ import './NewPublication.css';
 export const NewPublication = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { isVerified } = useContext(AuthContext);
 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Atendimento');
@@ -47,6 +49,11 @@ export const NewPublication = () => {
   };
 
   const handleSave = async (isDraft = false) => {
+    if (!isVerified) {
+      showToast('Sua conta precisa estar verificada para criar publicações no catálogo.', 'error');
+      return;
+    }
+
     if (!title.trim() && !isDraft) {
       showToast('Por favor, digite um título para a publicação.', 'error');
       return;

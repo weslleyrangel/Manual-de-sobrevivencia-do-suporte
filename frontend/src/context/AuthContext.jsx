@@ -69,8 +69,33 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    const isVerified = Boolean(user?.is_verified ?? user?.isVerified ?? true);
+    const isTechnician = Boolean(
+        user?.role === 'ROLE_TECNICO' || 
+        user?.role === 'ROLE_ADMIN' || 
+        user?.role?.toLowerCase()?.includes('tecnico') ||
+        user?.role?.toLowerCase()?.includes('técnico') ||
+        user?.role?.toLowerCase()?.includes('n2') ||
+        user?.role?.toLowerCase()?.includes('n3')
+    );
+    const isAdmin = Boolean(user?.role === 'ROLE_ADMIN');
+    const isAuthor = (authorId) => {
+        if (!user || authorId === undefined || authorId === null) return false;
+        return String(user.id) === String(authorId);
+    };
+
     return (
-        <AuthContext.Provider value={{ isAuthenticated, user, login, logout, loading }}>
+        <AuthContext.Provider value={{ 
+            isAuthenticated, 
+            user, 
+            login, 
+            logout, 
+            loading,
+            isVerified,
+            isTechnician,
+            isAdmin,
+            isAuthor
+        }}>
             {children}
         </AuthContext.Provider>
     );

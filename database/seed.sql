@@ -7,12 +7,12 @@ TRUNCATE TABLE solutions, problems, users RESTART IDENTITY CASCADE;
 -- Hash bcrypt de '123'
 -- $2a$10$3zZ4Q2.L5vKj7mH9X1uIeOGo1c3dK1fW2mZ5yJ9xQ0wE8rT4yU6i2 (ou gerado dinamicamente)
 
--- 1. Inserção dos 4 Usuários
-INSERT INTO users (id, name, email, password_hash, role, is_verified) VALUES
-(1, 'Weslley Rangel', 'admin@suporte.com', '$2a$10$w0f5uIqIqjHn4r3E5D4cOe1hKq7gB5x8s8bJ4qR0yU6i2aB1c2d3e', 'Especialista em Suporte N2', true),
-(2, 'Ana Martins', 'ana.martins@suporte.com', '$2a$10$w0f5uIqIqjHn4r3E5D4cOe1hKq7gB5x8s8bJ4qR0yU6i2aB1c2d3e', 'Analista de Suporte N2', true),
-(3, 'Rafael Costa', 'rafael.costa@suporte.com', '$2a$10$w0f5uIqIqjHn4r3E5D4cOe1hKq7gB5x8s8bJ4qR0yU6i2aB1c2d3e', 'Analista de Suporte N1', true),
-(4, 'Mariana Silva', 'mariana.silva@suporte.com', '$2a$10$w0f5uIqIqjHn4r3E5D4cOe1hKq7gB5x8s8bJ4qR0yU6i2aB1c2d3e', 'Especialista em Redes e Infra N2', true);
+-- 1. Inserção dos 4 Usuários (Hash bcrypt real de '123')
+INSERT INTO users (id, name, email, password_hash, role, job_title, is_verified) VALUES
+(1, 'Weslley Rangel', 'admin@suporte.com', '$2a$10$l5tAZnu.OyQd2OgEUyAV9uOrCtG5sHIPsQ/jPMMwjxFYy6plX4dyO', 'ADMIN', 'Especialista em Suporte N2', true),
+(2, 'Ana Martins', 'ana.martins@suporte.com', '$2a$10$l5tAZnu.OyQd2OgEUyAV9uOrCtG5sHIPsQ/jPMMwjxFYy6plX4dyO', 'MODERATOR', 'Analista de Suporte N2', true),
+(3, 'Rafael Costa', 'rafael.costa@suporte.com', '$2a$10$l5tAZnu.OyQd2OgEUyAV9uOrCtG5sHIPsQ/jPMMwjxFYy6plX4dyO', 'MEMBER', 'Analista de Suporte N1', true),
+(4, 'Mariana Silva', 'mariana.silva@suporte.com', '$2a$10$l5tAZnu.OyQd2OgEUyAV9uOrCtG5sHIPsQ/jPMMwjxFYy6plX4dyO', 'MEMBER', 'Especialista em Redes e Infra N2', true);
 
 SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
 

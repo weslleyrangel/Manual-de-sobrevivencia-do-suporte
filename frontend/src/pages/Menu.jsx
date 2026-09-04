@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { ThemeContext, useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { AppLayout } from '../components/layout/AppLayout';
 import { Icon } from '../components/common/Icons';
@@ -8,32 +9,9 @@ import './Menu.css';
 
 export const Menu = () => {
   const { user, logout } = useContext(AuthContext);
+  const { isDarkMode, toggleTheme } = useTheme();
   const { showToast } = useToast();
   const navigate = useNavigate();
-
-  const [darkMode, setDarkMode] = useState(() => {
-    return document.documentElement.getAttribute('data-theme') === 'dark';
-  });
-
-  const toggleTheme = () => {
-    const nextTheme = !darkMode;
-    setDarkMode(nextTheme);
-    if (nextTheme) {
-      document.documentElement.setAttribute('data-theme', 'dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-      localStorage.setItem('theme', 'light');
-    }
-  };
-
-  useEffect(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-      setDarkMode(true);
-    }
-  }, []);
 
   const handleLogout = async () => {
     if (logout) await logout();
@@ -93,18 +71,18 @@ export const Menu = () => {
 
               <div className="menu-item-card">
                 <div className="menu-item-icon-box box-mint">
-                  <Icon name={darkMode ? 'moon' : 'sun'} size={19} color="var(--green-deep)" />
+                  <Icon name={isDarkMode ? 'moon' : 'sun'} size={19} color="var(--green-deep)" />
                 </div>
                 <div className="menu-item-copy">
                   <span className="menu-item-title">Aparência</span>
                   <span className="menu-item-desc">
-                    Modo {darkMode ? 'Escuro (Dark Mode)' : 'Claro'}
+                    Modo {isDarkMode ? 'Escuro (Dark Mode)' : 'Claro'}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={toggleTheme}
-                  className={`theme-toggle-switch pressable ${darkMode ? 'on' : ''}`}
+                  className={`theme-toggle-switch pressable ${isDarkMode ? 'on' : ''}`}
                   aria-label="Alternar modo escuro"
                 >
                   <div className="toggle-handle" />

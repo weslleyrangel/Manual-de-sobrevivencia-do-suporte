@@ -206,6 +206,30 @@ export const Icon = ({ name, size = 20, color = 'currentColor', className = '', 
         <line x1="8.59" x2="15.42" y1="13.51" y2="17.49" />
         <line x1="15.41" x2="8.59" y1="6.51" y2="10.49" />
       </g>
+    ),
+    x: (
+      <g>
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </g>
+    ),
+    'shield-check': (
+      <g>
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <path d="m9 12 2 2 4-4" />
+      </g>
+    ),
+    edit: (
+      <g>
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+      </g>
+    ),
+    'check-circle': (
+      <g>
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+        <polyline points="22 4 12 14.01 9 11.01" />
+      </g>
     )
   };
 

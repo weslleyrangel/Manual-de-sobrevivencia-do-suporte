@@ -8,59 +8,42 @@ import './MyPublications.css';
 
 export const MyPublications = () => {
   const navigate = useNavigate();
-  const authContext = useContext(AuthContext);
-  const user = authContext?.user;
+  const { user, loading: authLoading } = useContext(AuthContext);
 
   const [activeTab, setActiveTab] = useState('all');
   const [publications, setPublications] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fallbackPubs = [
-    {
-      id: '1',
-      title: 'Como desescalar uma conversa difícil',
-      category: 'Atendimento',
-      is_draft: false,
-      likes_count: 24,
-      views_count: 1240,
-      created_at: 'Hoje'
-    },
-    {
-      id: '2',
-      title: 'Atalhos de teclado mais úteis no Zendesk / Chat',
-      category: 'Ferramentas',
-      is_draft: true,
-      likes_count: 0,
-      views_count: 1,
-      created_at: 'Ontem'
-    }
-  ];
-
   useEffect(() => {
     let isMounted = true;
-    api.getProblems({ author_id: user?.id || 1, limit: 50 })
+
+    if (authLoading) return;
+
+    if (!user || !user.id) {
+      setPublications([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    api.getProblems({ author_id: user.id, limit: 100 })
       .then((data) => {
         if (isMounted) {
-          if (data && data.length > 0) {
-            setPublications(data);
-          } else {
-            setPublications(fallbackPubs);
-          }
+          setPublications(Array.isArray(data) ? data : []);
         }
       })
-      .catch(() => {
-        if (isMounted) setPublications(fallbackPubs);
+      .catch((err) => {
+        console.warn('Erro ao carregar publicações do usuário:', err);
+        if (isMounted) setPublications([]);
       })
       .finally(() => {
         if (isMounted) setLoading(false);
       });
 
     return () => { isMounted = false; };
-  }, [user]);
+  }, [user, authLoading]);
 
-  const currentList = publications.length > 0 ? publications : fallbackPubs;
-
-  const filteredPubs = currentList.filter((pub) => {
+  const filteredPubs = publications.filter((pub) => {
     if (activeTab === 'drafts') return pub.is_draft;
     if (activeTab === 'published') return !pub.is_draft;
     return true;
@@ -90,7 +73,9 @@ export const MyPublications = () => {
           <div className="mypubs-intro">
             <div className="mypubs-intro-text">
               <h1 className="mypubs-title">Minhas publicações</h1>
-              <p className="mypubs-subtitle">Gerencie os tutoriais e procedimentos registrados por você</p>
+              <p className="mypubs-subtitle">
+                {user?.name ? `Publicações e procedimentos registrados por ${user.name}` : 'Gerencie seus procedimentos e tutoriais'}
+              </p>
             </div>
           </div>
 
@@ -101,27 +86,31 @@ export const MyPublications = () => {
               className={`mypubs-tab-btn ${activeTab === 'all' ? 'active' : ''}`}
               onClick={() => setActiveTab('all')}
             >
-              Todas
+              Todas ({publications.length})
             </button>
             <button
               type="button"
               className={`mypubs-tab-btn ${activeTab === 'published' ? 'active' : ''}`}
               onClick={() => setActiveTab('published')}
             >
-              Publicadas
+              Publicadas ({publications.filter(p => !p.is_draft).length})
             </button>
             <button
               type="button"
               className={`mypubs-tab-btn ${activeTab === 'drafts' ? 'active' : ''}`}
               onClick={() => setActiveTab('drafts')}
             >
-              Rascunhos
+              Rascunhos ({publications.filter(p => p.is_draft).length})
             </button>
           </div>
 
           {/* Publications Grid */}
           <div className="mypubs-list">
-            {filteredPubs.length > 0 ? (
+            {loading ? (
+              <div className="no-results-box" style={{ gridColumn: '1 / -1' }}>
+                <p>Carregando suas publicações...</p>
+              </div>
+            ) : filteredPubs.length > 0 ? (
               filteredPubs.map((pub) => (
                 <div
                   key={pub.id}
@@ -129,8 +118,8 @@ export const MyPublications = () => {
                   onClick={() => navigate(`/publication/${pub.id}`)}
                 >
                   <div className="mypubs-card-header">
-                    <span className={`mypubs-tag ${pub.is_draft ? 'tag-draft' : 'tag-mint'}`}>
-                      {pub.is_draft ? 'RASCUNHO' : (pub.category?.toUpperCase() || 'ATENDIMENTO')}
+                    <span className={`mypubs-tag ${pub.is_draft ? 'tag-draft' : pub.status === 'FECHADA_ADMIN' ? 'tag-draft' : 'tag-mint'}`}>
+                      {pub.is_draft ? 'RASCUNHO' : (pub.status || pub.category?.toUpperCase() || 'PUBLICADO')}
                     </span>
                     <button
                       type="button"
@@ -150,6 +139,7 @@ export const MyPublications = () => {
                     </span>
                     <div className="mypubs-card-metrics">
                       <span>👍 {pub.likes_count || 0}</span>
+                      <span>💬 {pub.solutions_count || 0}</span>
                       <span>👁️ {pub.views_count || 1}</span>
                     </div>
                   </div>
@@ -157,7 +147,7 @@ export const MyPublications = () => {
               ))
             ) : (
               <div className="no-results-box" style={{ gridColumn: '1 / -1' }}>
-                <p>Nenhuma publicação encontrada nesta aba.</p>
+                <p>Você ainda não possui publicações nesta aba.</p>
               </div>
             )}
           </div>

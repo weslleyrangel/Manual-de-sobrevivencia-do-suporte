@@ -41,9 +41,9 @@ export const Register = () => {
       {/* Body */}
       <section className="register-body">
         <div className="register-intro">
-          <h1 className="register-heading">Vamos te conhecer</h1>
+          <h1 className="register-heading">Crie sua conta</h1>
           <p className="register-subheading">
-            Comece com o básico. Depois personalizamos seu manual.
+            Cadastre-se para acessar e compartilhar soluções no manual.
           </p>
         </div>
 
@@ -57,7 +57,7 @@ export const Register = () => {
                 id="register-name"
                 type="text"
                 required
-                placeholder="Seu nome"
+                placeholder="Seu nome completo"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
               />
@@ -65,13 +65,13 @@ export const Register = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="register-email">E-mail de trabalho</label>
+            <label className="form-label" htmlFor="register-email">E-mail</label>
             <div className="form-input-box">
               <input
                 id="register-email"
                 type="email"
                 required
-                placeholder="voce@empresa.com"
+                placeholder="seu.email@exemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
