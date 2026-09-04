@@ -11,13 +11,13 @@ exports.register = async (req, res) => {
         const { name, email, password, role } = req.body;
         
         if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password are required' });
+            return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
         }
 
         // Check if user exists
         const userExists = await db.query('SELECT * FROM users WHERE email = $1', [email]);
         if (userExists.rows && userExists.rows.length > 0) {
-            return res.status(400).json({ error: 'E-mail já cadastrado' });
+            return res.status(400).json({ error: 'Este e-mail já está cadastrado em nosso sistema.' });
         }
 
         // Hash password
@@ -47,8 +47,11 @@ exports.register = async (req, res) => {
             user_id: user.id
         });
     } catch (error) {
+        if (error.code === '23505') {
+            return res.status(400).json({ error: 'Este e-mail já está cadastrado em nosso sistema.' });
+        }
         console.error('Register error:', error);
-        return res.status(500).json({ error: 'Server error' });
+        return res.status(500).json({ error: 'Erro interno ao cadastrar usuário.' });
     }
 };
 
@@ -57,7 +60,7 @@ exports.login = async (req, res) => {
         const { email, password } = req.body;
         
         if (!email || !password) {
-            return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+            return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
         }
 
         // Find user
@@ -99,13 +102,19 @@ exports.login = async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000
         });
 
-        return res.status(200).json({ 
+        return res.status(200).json({
             message: 'Login realizado com sucesso',
-            user: { id: user.id, name: user.name, email: user.email, role: user.role }
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                is_verified: user.is_verified
+            }
         });
     } catch (error) {
         console.error('Login error:', error);
-        return res.status(500).json({ error: 'Server error' });
+        return res.status(500).json({ error: 'Erro interno ao realizar login.' });
     }
 };
 

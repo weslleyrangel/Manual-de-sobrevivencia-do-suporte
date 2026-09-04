@@ -13,7 +13,11 @@ export const ForgotPassword = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim() || !emailRegex.test(email.trim())) {
+      showToast('Por favor, informe um endereço de e-mail válido.', 'error');
+      return;
+    }
 
     setLoading(true);
     setTimeout(() => {
@@ -65,7 +69,7 @@ export const ForgotPassword = () => {
         ) : (
           <form onSubmit={handleSubmit} className="forgot-form">
             <div className="form-group">
-              <label className="form-label" htmlFor="forgot-email">E-mail</label>
+              <label className="form-label" htmlFor="forgot-email">E-mail cadastrado</label>
               <div className="form-input-box">
                 <input
                   id="forgot-email"

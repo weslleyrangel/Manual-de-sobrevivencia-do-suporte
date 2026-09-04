@@ -54,17 +54,28 @@ export const NewPublication = () => {
       return;
     }
 
-    if (!title.trim() && !isDraft) {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
       showToast('Por favor, digite um título para a publicação.', 'error');
+      return;
+    }
+
+    if (trimmedTitle.length < 10) {
+      showToast('O título deve ter no mínimo 10 caracteres.', 'error');
+      return;
+    }
+
+    if (trimmedTitle.length > 150) {
+      showToast('O título deve ter no máximo 150 caracteres.', 'error');
       return;
     }
 
     setLoading(true);
     try {
       await api.createProblem({
-        title: title.trim(),
+        title: trimmedTitle,
         category: category || 'Atendimento',
-        description: content.trim() || title.trim(),
+        description: content.trim() || trimmedTitle,
         steps: steps.map(s => `${s.title}: ${s.description}`),
         media_urls: []
       });
@@ -72,9 +83,7 @@ export const NewPublication = () => {
       showToast(isDraft ? 'Rascunho salvo com sucesso!' : 'Publicação realizada com sucesso!', 'success');
       navigate('/my-publications');
     } catch (error) {
-      console.warn('Erro ao salvar publicação na API, salvando fallback local', error);
-      showToast('Publicação salva com sucesso no catálogo!', 'success');
-      navigate('/my-publications');
+      showToast(error.message || 'Erro ao salvar publicação. Verifique as informações e tente novamente.', 'error');
     } finally {
       setLoading(false);
     }
@@ -130,10 +139,15 @@ export const NewPublication = () => {
                   <input
                     id="pub-title"
                     type="text"
+                    maxLength={150}
                     placeholder="Ex: Como resolver falha no login / SSO..."
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--foreground-muted)', marginTop: '4px', padding: '0 4px' }}>
+                  <span>Mínimo de 10 caracteres</span>
+                  <span>{title.length} / 150</span>
                 </div>
               </div>
 

@@ -1,7 +1,9 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { Icon } from '../components/common/Icons';
+import { api } from '../services/api';
 import './ProfessionalSetup.css';
 
 export const ProfessionalSetup = () => {
@@ -12,6 +14,7 @@ export const ProfessionalSetup = () => {
   const [error, setError] = useState('');
 
   const { login } = useContext(AuthContext);
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleFinish = async (e) => {
@@ -19,8 +22,16 @@ export const ProfessionalSetup = () => {
     setLoading(true);
     setError('');
 
+    const draft = JSON.parse(sessionStorage.getItem('register_draft') || '{}');
+    if (!draft.email || !draft.password) {
+      const msg = 'Dados cadastrais incompletos. Por favor, retorne à etapa anterior.';
+      setError(msg);
+      showToast(msg, 'error');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const draft = JSON.parse(sessionStorage.getItem('register_draft') || '{}');
       const payload = {
         name: draft.fullName || 'Usuário',
         email: draft.email || 'voce@empresa.com',
@@ -30,33 +41,16 @@ export const ProfessionalSetup = () => {
         level
       };
 
-      const response = await fetch('/api/v1/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        sessionStorage.removeItem('register_draft');
-        if (login) login();
-        navigate('/');
-      } else {
-        const data = await response.json().catch(() => ({}));
-        if (data.message) {
-          setError(data.message);
-        } else {
-          sessionStorage.removeItem('register_draft');
-          if (login) login();
-          navigate('/');
-        }
-      }
-    } catch (err) {
+      const result = await api.register(payload);
       sessionStorage.removeItem('register_draft');
-      if (login) login();
+      if (login) login(result?.user);
+      showToast(result?.message || 'Cadastro realizado com sucesso!', 'success');
       navigate('/');
+    } catch (err) {
+      const errMsg = err.message || 'Falha ao concluir cadastro. Tente novamente.';
+      setError(errMsg);
+      showToast(errMsg, 'error');
     } finally {
-      sessionStorage.removeItem('register_draft');
       setLoading(false);
     }
   };

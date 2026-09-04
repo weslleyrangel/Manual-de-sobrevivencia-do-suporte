@@ -16,12 +16,35 @@ export const Register = () => {
 
   const handleNextStep = (e) => {
     e.preventDefault();
+    setError('');
+
+    if (!fullName.trim() || fullName.trim().length < 3) {
+      setError('Por favor, informe seu nome completo (mínimo de 3 caracteres).');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim() || !emailRegex.test(email.trim())) {
+      setError('Por favor, informe um endereço de e-mail corporativo válido.');
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      setError('A senha deve ter no mínimo 6 caracteres.');
+      return;
+    }
+
     if (!termsAgreed) {
       setError('Você deve concordar com os Termos e a Política de Privacidade para continuar.');
       return;
     }
+
     // Save draft data in sessionStorage for step 2
-    sessionStorage.setItem('register_draft', JSON.stringify({ fullName, email, password }));
+    sessionStorage.setItem('register_draft', JSON.stringify({
+      fullName: fullName.trim(),
+      email: email.trim(),
+      password
+    }));
     navigate('/register/professional');
   };
 
@@ -41,7 +64,7 @@ export const Register = () => {
       {/* Body */}
       <section className="register-body">
         <div className="register-intro">
-          <h1 className="register-heading">Crie sua conta</h1>
+          <h1 className="register-heading">Vamos te conhecer</h1>
           <p className="register-subheading">
             Cadastre-se para acessar e compartilhar soluções no manual.
           </p>
@@ -65,7 +88,7 @@ export const Register = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="register-email">E-mail</label>
+            <label className="form-label" htmlFor="register-email">E-mail de trabalho</label>
             <div className="form-input-box">
               <input
                 id="register-email"

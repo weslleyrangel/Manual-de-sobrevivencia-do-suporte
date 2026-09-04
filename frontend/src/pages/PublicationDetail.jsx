@@ -159,6 +159,16 @@ export const PublicationDetail = () => {
     }
 
     const newText = commentText.trim();
+    if (!newText) {
+      showToast('Por favor, digite a descrição da sua solução.', 'error');
+      return;
+    }
+
+    if (newText.length < 20) {
+      showToast('A solução deve ter no mínimo 20 caracteres para garantir clareza.', 'error');
+      return;
+    }
+
     const tempId = Date.now();
 
     setComments((prev) => [
@@ -179,13 +189,18 @@ export const PublicationDetail = () => {
     setCommentText('');
 
     try {
-      await api.addSolution(id || '1', {
+      const created = await api.addSolution(id || '1', {
         content: newText,
         steps: [`1. ${newText}`]
       });
+      if (created && created.id) {
+        setComments((prev) => prev.map(c => c.id === tempId ? { ...c, id: created.id } : c));
+      }
       showToast('Solução colaborativa enviada com sucesso!', 'success');
     } catch (err) {
-      showToast('Comentário registrado localmente.', 'info');
+      setComments((prev) => prev.filter(c => c.id !== tempId));
+      setCommentText(newText);
+      showToast(err.message || 'Erro ao enviar solução. Tente novamente.', 'error');
     }
   };
 
@@ -367,7 +382,7 @@ export const PublicationDetail = () => {
               <section className="pubdetail-solution-card">
                 <div className="solution-heading">
                   <Icon name="circle-check-big" size={20} color="var(--green-leaf)" />
-                  <span className="solution-label">DESCRIÇÃO E CONTEXTO</span>
+                  <span className="solution-label">COMO FOI SOLUCIONADO</span>
                 </div>
                 <p className="solution-text">{publication?.description || primarySolution.content}</p>
 
@@ -484,7 +499,7 @@ export const PublicationDetail = () => {
                   <form onSubmit={handleAddComment} className="add-comment-form">
                     <input
                       type="text"
-                      placeholder="Proponha uma solução alternativa ou comentário..."
+                      placeholder="Escreva um comentário ou solução alternativa..."
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
                       className="comment-input"

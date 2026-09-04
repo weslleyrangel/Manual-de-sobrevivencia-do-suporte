@@ -127,7 +127,7 @@ export const Login = () => {
 
             <div className="login-hero-box">
               <span className="login-eyebrow">PORTAL DO CONHECIMENTO</span>
-              <h1 className="login-title">Bem-vindo de volta!</h1>
+              <h1 className="login-title">Pronto para mais um turno?</h1>
               <p className="login-description">
                 Acesse tutoriais, resolva dúvidas e encontre soluções práticas com a comunidade.
               </p>
@@ -142,7 +142,7 @@ export const Login = () => {
 
             <form onSubmit={handleSubmit} className="login-form">
               <div className="form-group">
-                <label className="form-label" htmlFor="email-input">E-mail</label>
+                <label className="form-label" htmlFor="email-input">E-mail de trabalho</label>
                 <div className="form-input-box">
                   <Icon name="search" size={18} color="var(--foreground-muted)" />
                   <input

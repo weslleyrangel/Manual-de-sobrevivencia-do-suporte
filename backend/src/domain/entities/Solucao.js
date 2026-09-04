@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { ValidationError } = require('../errors/DomainErrors');
 
 class Solucao {
   constructor({ id, perguntaId, authorId, descricaoPassoAPasso, anexosUrls, dataCriacao, editadoEm }) {
@@ -15,7 +16,7 @@ class Solucao {
     const { descricaoPassoAPasso } = payload;
     
     if (!descricaoPassoAPasso || descricaoPassoAPasso.trim().length < 20) {
-      throw new Error('O passo a passo da solução deve ter no mínimo 20 caracteres.');
+      throw new ValidationError('O passo a passo da solução deve ter no mínimo 20 caracteres.');
     }
 
     return new Solucao(payload);
@@ -23,7 +24,7 @@ class Solucao {
 
   atualizarConteudo({ novaDescricaoPassoAPasso, novosAnexosUrls }) {
     if (!novaDescricaoPassoAPasso || novaDescricaoPassoAPasso.trim().length < 20) {
-      throw new Error('O passo a passo da solução deve ter no mínimo 20 caracteres.');
+      throw new ValidationError('O passo a passo da solução deve ter no mínimo 20 caracteres.');
     }
 
     this.descricaoPassoAPasso = novaDescricaoPassoAPasso;

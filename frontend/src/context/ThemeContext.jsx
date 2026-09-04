@@ -80,8 +80,38 @@ export const ThemeProvider = ({ children }) => {
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
+  const [localDark, setLocalDark] = useState(() => {
+    return document.documentElement.getAttribute('data-theme') === 'dark' || localStorage.getItem('theme') === 'dark';
+  });
+
   if (!context) {
-    throw new Error('useTheme deve ser usado dentro de um ThemeProvider');
+    return {
+      isDarkMode: localDark,
+      toggleTheme: () => {
+        setLocalDark((prev) => {
+          const next = !prev;
+          if (next) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+          } else {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+          }
+          return next;
+        });
+      },
+      setTheme: (t) => {
+        const next = t === 'dark';
+        setLocalDark(next);
+        if (next) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        }
+      }
+    };
   }
   return context;
 };

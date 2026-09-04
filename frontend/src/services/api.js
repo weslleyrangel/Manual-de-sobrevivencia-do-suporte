@@ -3,6 +3,14 @@ import { saveProblemsOffline, getOfflineProblems } from '../utils/offlineStore';
 
 const API_BASE = '/api/v1';
 
+async function parseApiResponse(res, defaultErrorMsg) {
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || err.message || defaultErrorMsg);
+    }
+    return res.json();
+}
+
 export const api = {
     // 1. Auth
     async login(email, password) {
@@ -12,11 +20,7 @@ export const api = {
             credentials: 'include',
             body: JSON.stringify({ email, password })
         });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || err.error || 'E-mail ou senha incorretos');
-        }
-        return res.json();
+        return parseApiResponse(res, 'E-mail ou senha incorretos');
     },
 
     async register(data) {
@@ -26,11 +30,7 @@ export const api = {
             credentials: 'include',
             body: JSON.stringify(data)
         });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || err.error || 'Falha ao registrar conta');
-        }
-        return res.json();
+        return parseApiResponse(res, 'Falha ao registrar conta');
     },
 
     async me() {
@@ -101,11 +101,7 @@ export const api = {
             credentials: 'include',
             body: JSON.stringify(data)
         });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || err.error || 'Erro ao criar publicação');
-        }
-        return res.json();
+        return parseApiResponse(res, 'Erro ao criar publicação');
     },
 
     async addSolution(problemId, data) {
@@ -115,11 +111,7 @@ export const api = {
             credentials: 'include',
             body: JSON.stringify(data)
         });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || err.error || 'Erro ao adicionar solução');
-        }
-        return res.json();
+        return parseApiResponse(res, 'Erro ao adicionar solução');
     },
 
     async acceptSolution(problemId, solutionId) {
@@ -127,11 +119,7 @@ export const api = {
             method: 'PUT',
             credentials: 'include'
         });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || err.error || 'Erro ao aceitar solução');
-        }
-        return res.json();
+        return parseApiResponse(res, 'Erro ao aceitar solução');
     },
 
     async editSolution(problemId, solutionId, content) {
@@ -141,11 +129,7 @@ export const api = {
             credentials: 'include',
             body: JSON.stringify({ content })
         });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || err.error || 'Erro ao editar solução');
-        }
-        return res.json();
+        return parseApiResponse(res, 'Erro ao editar solução');
     },
 
     async closeProblemAdmin(problemId, reason) {
@@ -155,11 +139,7 @@ export const api = {
             credentials: 'include',
             body: JSON.stringify({ reason })
         });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || err.error || 'Erro ao encerrar pergunta administrativamente');
-        }
-        return res.json();
+        return parseApiResponse(res, 'Erro ao encerrar pergunta administrativamente');
     },
 
     // 3. Busca Full-Text
