@@ -52,17 +52,12 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = (userData) => {
-        setIsAuthenticated(true);
-        if (userData) {
-            setUser(userData);
-        } else if (!user) {
-            setUser({
-                id: 1,
-                name: 'Weslley Rangel',
-                email: 'admin@suporte.com',
-                role: 'Especialista em Suporte N2'
-            });
+        if (!userData || typeof userData !== 'object' || userData.nativeEvent) {
+            console.warn('login() chamado sem dados de usuário válidos.');
+            return;
         }
+        setIsAuthenticated(true);
+        setUser(userData);
     };
 
     const logout = async () => {

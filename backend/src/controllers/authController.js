@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secret-key-for-dev';
 
 exports.register = async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password, role, level, area, job_title } = req.body;
         
         if (!email || !password) {
             return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
@@ -28,10 +28,15 @@ exports.register = async (req, res) => {
         const verificationToken = crypto.randomBytes(32).toString('hex');
         const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
+        // Compute role and title
+        const computedJobTitle = job_title || (role && level ? `${role} · ${level}` : role || 'Analista de Suporte · Nível 1');
+        const computedRole = (role && (role.toUpperCase().includes('ADMIN') ? 'ADMIN' : (role.toUpperCase().includes('MODERATOR') ? 'MODERATOR' : 'MEMBER'))) || 'MEMBER';
+        const computedName = (name && name.trim()) || 'Analista de Suporte';
+
         // Insert user
         const result = await db.query(
-            'INSERT INTO users (email, password_hash, verification_token, token_expires_at) VALUES ($1, $2, $3, $4) RETURNING id',
-            [email, passwordHash, verificationToken, tokenExpiresAt]
+            'INSERT INTO users (name, email, password_hash, role, job_title, is_verified, verification_token, token_expires_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, name, email, role, job_title, is_verified',
+            [computedName, email.trim().toLowerCase(), passwordHash, computedRole, computedJobTitle, true, verificationToken, tokenExpiresAt]
         );
         const user = result.rows[0];
 
@@ -44,7 +49,15 @@ exports.register = async (req, res) => {
 
         return res.status(201).json({
             message: 'Usuário criado. Verifique seu e-mail para ativar a conta.',
-            user_id: user.id
+            user_id: user.id,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                job_title: user.job_title,
+                is_verified: user.is_verified
+            }
         });
     } catch (error) {
         if (error.code === '23505') {

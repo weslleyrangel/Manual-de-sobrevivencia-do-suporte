@@ -23,7 +23,7 @@ export const ProfessionalSetup = () => {
     setError('');
 
     const draft = JSON.parse(sessionStorage.getItem('register_draft') || '{}');
-    if (!draft.email || !draft.password) {
+    if (!draft.fullName?.trim() || !draft.email?.trim() || !draft.password) {
       const msg = 'Dados cadastrais incompletos. Por favor, retorne à etapa anterior.';
       setError(msg);
       showToast(msg, 'error');
@@ -33,9 +33,9 @@ export const ProfessionalSetup = () => {
 
     try {
       const payload = {
-        name: draft.fullName || 'Usuário',
-        email: draft.email || 'voce@empresa.com',
-        password: draft.password || '123456',
+        name: draft.fullName.trim(),
+        email: draft.email.trim(),
+        password: draft.password,
         area,
         role,
         level
@@ -43,9 +43,30 @@ export const ProfessionalSetup = () => {
 
       const result = await api.register(payload);
       sessionStorage.removeItem('register_draft');
-      if (login) login(result?.user);
-      showToast(result?.message || 'Cadastro realizado com sucesso!', 'success');
-      navigate('/');
+
+      // Tentativa de login automático para obter a sessão JWT real do novo usuário
+      let loggedUser = null;
+      try {
+        const loginData = await api.login(payload.email, payload.password);
+        if (loginData?.user) {
+          loggedUser = loginData.user;
+        }
+      } catch (loginErr) {
+        console.warn('Auto-login pós-cadastro não completado:', loginErr);
+      }
+
+      if (!loggedUser && result?.user) {
+        loggedUser = result.user;
+      }
+
+      if (loggedUser && login) {
+        login(loggedUser);
+        showToast(`Cadastro realizado com sucesso! Bem-vindo(a), ${loggedUser.name}.`, 'success');
+        navigate('/');
+      } else {
+        showToast('Cadastro realizado com sucesso! Faça login para continuar.', 'success');
+        navigate('/login', { state: { email: payload.email } });
+      }
     } catch (err) {
       const errMsg = err.message || 'Falha ao concluir cadastro. Tente novamente.';
       setError(errMsg);

@@ -18,14 +18,14 @@ export const Menu = () => {
     navigate('/login');
   };
 
-  const name = user?.name || 'Ana Martins';
-  const role = user?.role || 'Analista de suporte';
+  const name = user?.name || 'Usuário';
+  const role = user?.role || user?.job_title || 'Membro';
   const initials = name
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
     .map((n) => n[0].toUpperCase())
-    .join('') || 'AM';
+    .join('') || 'U';
 
   return (
     <AppLayout>

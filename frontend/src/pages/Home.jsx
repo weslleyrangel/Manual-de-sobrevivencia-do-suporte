@@ -15,7 +15,7 @@ export const Home = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const userName = user?.name ? user.name.split(' ')[0] : 'Weslley';
+  const userName = user?.name ? user.name.split(' ')[0] : 'Usuário';
 
   // Current time greeting
   const getGreeting = () => {
@@ -157,7 +157,7 @@ export const Home = () => {
                           </div>
                           <h3 className="recent-article-title">{art.title}</h3>
                           <span className="recent-article-meta">
-                            Por {art.author_name || 'Weslley Rangel'} · {art.views_count || 100} visualizações
+                            Por {art.author_name || 'Especialista'} · {art.views_count || 0} visualizações
                           </span>
                         </div>
                         <Icon name="chevron-right" size={20} color="var(--green-leaf)" />
@@ -175,7 +175,7 @@ export const Home = () => {
                             <span className="badge-resolved">RESOLVIDO</span>
                           </div>
                           <h3 className="recent-article-title">Como desescalonar chamados críticos e lidar com clientes irritados</h3>
-                          <span className="recent-article-meta">Por Weslley Rangel · 1.2k visualizações</span>
+                          <span className="recent-article-meta">Por Especialista · 1.2k visualizações</span>
                         </div>
                         <Icon name="chevron-right" size={20} color="var(--green-leaf)" />
                       </Link>
@@ -190,7 +190,7 @@ export const Home = () => {
                             <span className="badge-resolved">RESOLVIDO</span>
                           </div>
                           <h3 className="recent-article-title">Guia de troubleshooting para falha no login / SSO corporativo</h3>
-                          <span className="recent-article-meta">Por Weslley Rangel · 890 visualizações</span>
+                          <span className="recent-article-meta">Por Especialista · 890 visualizações</span>
                         </div>
                         <Icon name="chevron-right" size={20} color="var(--green-leaf)" />
                       </Link>

@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Icon } from '../components/common/Icons';
@@ -8,10 +8,11 @@ import './Login.css';
 
 export const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const auth = useContext(AuthContext);
   const { showToast } = useToast();
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(location.state?.email || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -40,11 +41,7 @@ export const Login = () => {
     }
   };
 
-  const handleQuickLogin = (userEmail) => {
-    setEmail(userEmail);
-    setPassword('123');
-    setError('');
-  };
+
 
   return (
     <div className="login-viewport">
@@ -116,13 +113,6 @@ export const Login = () => {
                 <div className="login-brand-icon" />
                 <span className="login-brand-name">Manual de Sobrevivência</span>
               </div>
-              <button
-                type="button"
-                className="login-help-badge pressable"
-                onClick={() => showToast('Credenciais de teste: qualquer usuário com a senha: 123', 'info')}
-              >
-                PRECISA DE AJUDA?
-              </button>
             </div>
 
             <div className="login-hero-box">
@@ -204,40 +194,7 @@ export const Login = () => {
               </button>
             </form>
 
-            {/* Quick Select Pill Toolbar for Local Dev */}
-            <div className="quick-users-box">
-              <div className="quick-users-title">Acesso Rápido para Testes:</div>
-              <div className="quick-users-grid">
-                <button
-                  type="button"
-                  className="quick-user-pill"
-                  onClick={() => handleQuickLogin('admin@suporte.com')}
-                >
-                  👑 Weslley (Admin)
-                </button>
-                <button
-                  type="button"
-                  className="quick-user-pill"
-                  onClick={() => handleQuickLogin('ana.martins@suporte.com')}
-                >
-                  🛡️ Ana (Técnico)
-                </button>
-                <button
-                  type="button"
-                  className="quick-user-pill"
-                  onClick={() => handleQuickLogin('rafael.costa@suporte.com')}
-                >
-                  👨‍💻 Rafael (N1)
-                </button>
-                <button
-                  type="button"
-                  className="quick-user-pill"
-                  onClick={() => handleQuickLogin('mariana.silva@suporte.com')}
-                >
-                  👩‍💻 Mariana (Redes)
-                </button>
-              </div>
-            </div>
+
 
             <footer className="login-footer">
               <span className="login-footer-prompt">Ainda não tem uma conta?</span>
