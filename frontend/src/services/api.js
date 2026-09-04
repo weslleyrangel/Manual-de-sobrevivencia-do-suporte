@@ -33,6 +33,13 @@ export const api = {
         return parseApiResponse(res, 'Falha ao registrar conta');
     },
 
+    async verifyEmail(token) {
+        const res = await fetch(`${API_BASE}/auth/verify/${encodeURIComponent(token)}`, {
+            credentials: 'include'
+        });
+        return parseApiResponse(res, 'Token inválido ou expirado');
+    },
+
     async me() {
         const res = await fetch(`${API_BASE}/auth/me`, {
             credentials: 'include'

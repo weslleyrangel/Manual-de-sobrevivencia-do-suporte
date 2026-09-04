@@ -1,6 +1,5 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Icon } from '../components/common/Icons';
 import { api } from '../services/api';
@@ -13,7 +12,6 @@ export const ProfessionalSetup = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { login } = useContext(AuthContext);
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -44,29 +42,8 @@ export const ProfessionalSetup = () => {
       const result = await api.register(payload);
       sessionStorage.removeItem('register_draft');
 
-      // Tentativa de login automático para obter a sessão JWT real do novo usuário
-      let loggedUser = null;
-      try {
-        const loginData = await api.login(payload.email, payload.password);
-        if (loginData?.user) {
-          loggedUser = loginData.user;
-        }
-      } catch (loginErr) {
-        console.warn('Auto-login pós-cadastro não completado:', loginErr);
-      }
-
-      if (!loggedUser && result?.user) {
-        loggedUser = result.user;
-      }
-
-      if (loggedUser && login) {
-        login(loggedUser);
-        showToast(`Cadastro realizado com sucesso! Bem-vindo(a), ${loggedUser.name}.`, 'success');
-        navigate('/');
-      } else {
-        showToast('Cadastro realizado com sucesso! Faça login para continuar.', 'success');
-        navigate('/login', { state: { email: payload.email } });
-      }
+      showToast('Cadastro realizado! Verifique seu e-mail para ativar a conta.', 'success');
+      navigate('/check-email', { state: { email: result?.email || payload.email } });
     } catch (err) {
       const errMsg = err.message || 'Falha ao concluir cadastro. Tente novamente.';
       setError(errMsg);

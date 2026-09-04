@@ -36,7 +36,7 @@ exports.register = async (req, res) => {
         // Insert user
         const result = await db.query(
             'INSERT INTO users (name, email, password_hash, role, job_title, is_verified, verification_token, token_expires_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, name, email, role, job_title, is_verified',
-            [computedName, email.trim().toLowerCase(), passwordHash, computedRole, computedJobTitle, true, verificationToken, tokenExpiresAt]
+            [computedName, email.trim().toLowerCase(), passwordHash, computedRole, computedJobTitle, false, verificationToken, tokenExpiresAt]
         );
         const user = result.rows[0];
 
@@ -48,16 +48,8 @@ exports.register = async (req, res) => {
         }
 
         return res.status(201).json({
-            message: 'Usuário criado. Verifique seu e-mail para ativar a conta.',
-            user_id: user.id,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                job_title: user.job_title,
-                is_verified: user.is_verified
-            }
+            message: 'Cadastro realizado! Enviamos um link de confirmação para o seu e-mail.',
+            email: user.email
         });
     } catch (error) {
         if (error.code === '23505') {
