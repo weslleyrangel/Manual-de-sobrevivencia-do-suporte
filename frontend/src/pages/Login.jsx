@@ -123,6 +123,25 @@ export const Login = () => {
               </p>
             </div>
 
+            {location.state?.verifiedSuccess && (
+              <div className="login-verified-banner animate-fade">
+                <div className="login-verified-icon">
+                  <Icon name="badge-check" size={22} color="var(--green-leaf)" />
+                </div>
+                <div className="login-verified-content">
+                  <strong>E-mail verificado com sucesso! 🎉</strong>
+                  <p>Sua conta está ativa. Digite sua senha abaixo para acessar o manual.</p>
+                </div>
+              </div>
+            )}
+
+            {location.state?.verifiedError && (
+              <div className="login-error-msg">
+                <Icon name="x" size={16} color="var(--color-error-foreground)" />
+                <span>{location.state.verifiedError}</span>
+              </div>
+            )}
+
             {error && (
               <div className="login-error-msg">
                 <Icon name="x" size={16} color="var(--color-error-foreground)" />

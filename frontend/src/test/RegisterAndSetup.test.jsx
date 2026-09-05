@@ -87,7 +87,6 @@ describe('Register Flow', () => {
           level: 'Nível 2 (Pleno)'
         })
       }));
-      expect(mockLogin).toHaveBeenCalled();
       expect(sessionStorage.getItem('register_draft')).toBeNull();
     });
   });

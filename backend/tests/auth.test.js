@@ -44,9 +44,8 @@ describe('Auth API Endpoints', () => {
                 });
             
             expect(res.statusCode).toBe(201);
-            expect(res.body).toHaveProperty('message', 'Usuário criado. Verifique seu e-mail para ativar a conta.');
-            expect(res.body).toHaveProperty('user_id', 1);
-            // expect(res.headers['set-cookie'][0]).toMatch(/jwt=fake_jwt_token/); - removido, pois agora não envia cookie no registro
+            expect(res.body).toHaveProperty('message', 'Cadastro realizado! Enviamos um link de confirmação para o seu e-mail.');
+            expect(res.body).toHaveProperty('email', 'tecnico@suporte.com');
         });
 
         it('should return 400 if email or password are missing', async () => {

@@ -24,8 +24,12 @@ exports.register = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
 
-        // Generate verification token
-        const verificationToken = crypto.randomBytes(32).toString('hex');
+        // Generate verification token (signed JWT, expires in 24h)
+        const verificationToken = jwt.sign(
+            { email: email.trim().toLowerCase(), type: 'EMAIL_VERIFY' },
+            JWT_SECRET,
+            { expiresIn: '24h' }
+        );
         const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
         // Compute role and title
@@ -42,7 +46,7 @@ exports.register = async (req, res) => {
 
         // Send email
         try {
-            await emailService.sendVerificationEmail(email, verificationToken);
+            await emailService.sendVerificationEmail(user.email, verificationToken, user.name);
         } catch (e) {
             console.warn('Falha no envio de email:', e.message);
         }
@@ -126,23 +130,60 @@ exports.login = async (req, res) => {
 exports.verifyEmail = async (req, res) => {
     try {
         const { token } = req.params;
-        const result = await db.query(
-            'SELECT * FROM users WHERE verification_token = $1 AND token_expires_at > NOW()',
-            [token]
-        );
-
-        if (!result.rows || result.rows.length === 0) {
+        if (!token) {
             return res.status(400).json({ error: 'Token inválido ou expirado' });
         }
 
-        await db.query(
-            'UPDATE users SET is_verified = true, verification_token = NULL, token_expires_at = NULL WHERE id = $1',
-            [result.rows[0].id]
-        );
+        // 1. Tenta decodificar como JWT assinado
+        let userEmail = null;
+        try {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            if (decoded.email && decoded.type === 'EMAIL_VERIFY') {
+                userEmail = decoded.email;
+            }
+        } catch (jwtErr) {
+            // Se expirou ou não é JWT válido, tenta checagem direta no banco como fallback
+        }
 
-        return res.status(200).json({ message: 'E-mail verificado com sucesso!' });
+        let user = null;
+        if (userEmail) {
+            const result = await db.query('SELECT * FROM users WHERE email = $1', [userEmail]);
+            if (result.rows && result.rows.length > 0) {
+                user = result.rows[0];
+            }
+        } else {
+            // Fallback para tokens legados em formato hexadecimal
+            const result = await db.query(
+                'SELECT * FROM users WHERE verification_token = $1',
+                [token]
+            );
+            if (result.rows && result.rows.length > 0) {
+                user = result.rows[0];
+                if (user.token_expires_at && new Date(user.token_expires_at) < new Date()) {
+                    return res.status(400).json({ error: 'Token de verificação expirado' });
+                }
+            }
+        }
+
+        if (!user) {
+            return res.status(400).json({ error: 'Token inválido ou expirado' });
+        }
+
+        // Se ainda não estiver verificado, atualiza no banco
+        if (!user.is_verified) {
+            await db.query(
+                'UPDATE users SET is_verified = true, verification_token = NULL, token_expires_at = NULL WHERE id = $1',
+                [user.id]
+            );
+        }
+
+        return res.status(200).json({ 
+            message: 'E-mail verificado com sucesso!',
+            email: user.email 
+        });
     } catch (error) {
-        return res.status(500).json({ error: 'Server error' });
+        console.error('Verify error:', error);
+        return res.status(500).json({ error: 'Erro ao verificar e-mail' });
     }
 };
 
