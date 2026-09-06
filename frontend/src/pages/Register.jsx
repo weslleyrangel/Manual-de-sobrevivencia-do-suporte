@@ -39,13 +39,14 @@ export const Register = () => {
       return;
     }
 
-    // Save draft data in sessionStorage for step 2
-    sessionStorage.setItem('register_draft', JSON.stringify({
-      fullName: fullName.trim(),
-      email: email.trim(),
-      password
-    }));
-    navigate('/register/professional');
+    // Pass draft data via router state (memory) without exposing password in sessionStorage
+    navigate('/register/professional', {
+      state: {
+        fullName: fullName.trim(),
+        email: email.trim(),
+        password
+      }
+    });
   };
 
   return (

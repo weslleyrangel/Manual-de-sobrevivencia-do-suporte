@@ -40,6 +40,36 @@ export const api = {
         return parseApiResponse(res, 'Token inválido ou expirado');
     },
 
+    async resendVerification(email) {
+        const res = await fetch(`${API_BASE}/auth/resend-verification`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email })
+        });
+        return parseApiResponse(res, 'Falha ao reenviar e-mail de ativação');
+    },
+
+    async forgotPassword(email) {
+        const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email })
+        });
+        return parseApiResponse(res, 'Falha ao solicitar recuperação de senha');
+    },
+
+    async resetPassword(token, password) {
+        const res = await fetch(`${API_BASE}/auth/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ token, password })
+        });
+        return parseApiResponse(res, 'Falha ao redefinir senha');
+    },
+
     async me() {
         const res = await fetch(`${API_BASE}/auth/me`, {
             credentials: 'include'

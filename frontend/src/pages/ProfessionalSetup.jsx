@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { Icon } from '../components/common/Icons';
 import { api } from '../services/api';
@@ -14,13 +14,14 @@ export const ProfessionalSetup = () => {
 
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleFinish = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    const draft = JSON.parse(sessionStorage.getItem('register_draft') || '{}');
+    const draft = location.state || {};
     if (!draft.fullName?.trim() || !draft.email?.trim() || !draft.password) {
       const msg = 'Dados cadastrais incompletos. Por favor, retorne à etapa anterior.';
       setError(msg);
@@ -40,7 +41,6 @@ export const ProfessionalSetup = () => {
       };
 
       const result = await api.register(payload);
-      sessionStorage.removeItem('register_draft');
 
       showToast('Cadastro realizado! Verifique seu e-mail para ativar a conta.', 'success');
       navigate('/check-email', { state: { email: result?.email || payload.email } });

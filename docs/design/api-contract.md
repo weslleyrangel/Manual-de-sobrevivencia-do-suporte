@@ -7,46 +7,107 @@ Este documento define o contrato de comunicação entre o Frontend (React PWA) e
 
 ---
 
-## 2. Autenticação (JWT)
+## 2. Autenticação (JWT via HttpOnly Cookie & Rate Limited)
 
-A maioria das rotas exigirá um cabeçalho HTTP de autorização:
-`Authorization: Bearer <token_jwt>`
+A autenticação é gerenciada através de cookies seguros `HttpOnly` (`jwt`).
 
 ### 2.1. Registro de Usuário
-- **Endpoint:** `POST /auth/register`
-- **Descrição:** Cria uma nova conta para o técnico de suporte.
+- **Endpoint:** `POST /api/v1/auth/register`
+- **Descrição:** Cria uma nova conta com papel estrito `MEMBER` e despacha e-mail de ativação via Mailtrap.
 - **Request Body:**
   ```json
   {
-    "email": "tecnico@suporte.com",
-    "password": "senha-segura"
+    "name": "Carlos Silva",
+    "email": "carlos@suporte.com",
+    "password": "senha-segura",
+    "job_title": "Analista de Suporte · Nível 2"
   }
   ```
 - **Response (201 Created):**
   ```json
   {
-    "message": "Usuário criado com sucesso",
-    "user_id": 1,
-    "token": "eyJhbGciOiJIUzI1NiIsInR..."
+    "message": "Cadastro realizado! Enviamos um link de confirmação para o seu e-mail.",
+    "email": "carlos@suporte.com"
   }
   ```
 
 ### 2.2. Login
-- **Endpoint:** `POST /auth/login`
-- **Descrição:** Autentica um usuário existente.
+- **Endpoint:** `POST /api/v1/auth/login`
+- **Descrição:** Autentica o usuário verificado e define o cookie seguro `jwt`.
 - **Request Body:**
   ```json
   {
-    "email": "tecnico@suporte.com",
+    "email": "carlos@suporte.com",
     "password": "senha-segura"
   }
   ```
 - **Response (200 OK):**
   ```json
   {
-    "token": "eyJhbGciOiJIUzI1NiIsInR..."
+    "message": "Login realizado com sucesso",
+    "user": {
+      "id": 1,
+      "name": "Carlos Silva",
+      "email": "carlos@suporte.com",
+      "role": "MEMBER",
+      "is_verified": true
+    }
   }
   ```
+
+### 2.3. Confirmação de E-mail
+- **Endpoint:** `GET /api/v1/auth/verify/:token`
+- **Descrição:** Ativa a conta a partir do link recebido por e-mail.
+
+### 2.4. Reenvio de Link de Ativação
+- **Endpoint:** `POST /api/v1/auth/resend-verification`
+- **Request Body:**
+  ```json
+  {
+    "email": "carlos@suporte.com"
+  }
+  ```
+- **Response (200 OK):**
+  ```json
+  {
+    "message": "Link de verificação reenviado com sucesso."
+  }
+  ```
+
+### 2.5. Solicitação de Recuperação de Senha ("Esqueceu a Senha?")
+- **Endpoint:** `POST /api/v1/auth/forgot-password`
+- **Request Body:**
+  ```json
+  {
+    "email": "carlos@suporte.com"
+  }
+  ```
+- **Response (200 OK):**
+  ```json
+  {
+    "message": "Se o e-mail estiver cadastrado, enviamos as instruções de redefinição."
+  }
+  ```
+
+### 2.6. Redefinição de Senha
+- **Endpoint:** `POST /api/v1/auth/reset-password`
+- **Request Body:**
+  ```json
+  {
+    "token": "reset_token_hex_or_jwt",
+    "password": "nova-senha-segura"
+  }
+  ```
+- **Response (200 OK):**
+  ```json
+  {
+    "message": "Senha redefinida com sucesso. Você já pode fazer login."
+  }
+  ```
+
+### 2.7. Sessão Atual (Me) & Logout
+- **Endpoint:** `GET /api/v1/auth/me` (Retorna dados do usuário autenticado).
+- **Endpoint:** `POST /api/v1/auth/logout` (Limpa o cookie `jwt`).
 
 ---
 

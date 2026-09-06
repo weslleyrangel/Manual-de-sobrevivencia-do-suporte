@@ -50,3 +50,5 @@ coverage/
 .gemini/
 .user_uploaded/
 scratch/
+implementation_plan.md
+walkthrough.md

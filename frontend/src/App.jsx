@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 // Lazy loading all pages for optimal performance and code-splitting
 const Login = React.lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
 const ForgotPassword = React.lazy(() => import('./pages/ForgotPassword').then(m => ({ default: m.ForgotPassword })));
+const ResetPassword = React.lazy(() => import('./pages/ResetPassword').then(m => ({ default: m.ResetPassword })));
 const Register = React.lazy(() => import('./pages/Register').then(m => ({ default: m.Register })));
 const ProfessionalSetup = React.lazy(() => import('./pages/ProfessionalSetup').then(m => ({ default: m.ProfessionalSetup })));
 const CheckEmail = React.lazy(() => import('./pages/CheckEmail').then(m => ({ default: m.CheckEmail })));
@@ -39,6 +40,7 @@ function App() {
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/register" element={<Register />} />
         <Route path="/register/professional" element={<ProfessionalSetup />} />
         <Route path="/professional-setup" element={<ProfessionalSetup />} />
