@@ -8,7 +8,7 @@ import { api } from '../services/api';
 import './Home.css';
 
 export const Home = () => {
-  const { user } = useContext(AuthContext);
+  const { user, isAdmin } = useContext(AuthContext);
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -62,6 +62,34 @@ export const Home = () => {
 
         {/* Content Section */}
         <div className="home-content">
+          {/* Admin Banner (Exclusivo Administrador) */}
+          {isAdmin && (
+            <div 
+              className="home-admin-banner pressable"
+              onClick={() => navigate('/admin')}
+              role="button"
+              tabIndex={0}
+            >
+              <div className="home-admin-banner-left">
+                <div className="home-admin-banner-icon">
+                  <Icon name="shield-check" size={22} color="#FFFFFF" />
+                </div>
+                <div>
+                  <div className="home-admin-banner-title">
+                    Modo Administrador Ativo <span className="home-admin-badge">ADMIN</span>
+                  </div>
+                  <div className="home-admin-banner-desc">
+                    Acesse o console para visualizar métricas, gerenciar usuários e moderar publicações.
+                  </div>
+                </div>
+              </div>
+              <div className="home-admin-banner-btn">
+                <span>Console Admin</span>
+                <Icon name="chevron-right" size={16} />
+              </div>
+            </div>
+          )}
+
           {/* Hero Banner Desktop */}
           <section className="home-hero-banner">
             <div className="home-intro">

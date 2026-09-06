@@ -82,7 +82,11 @@ export const AuthProvider = ({ children }) => {
         user?.role?.toLowerCase()?.includes('n2') ||
         user?.role?.toLowerCase()?.includes('n3')
     );
-    const isAdmin = Boolean(user?.role === 'ROLE_ADMIN');
+    const isAdmin = Boolean(
+        user?.role === 'ROLE_ADMIN' || 
+        user?.role === 'ADMIN' || 
+        user?.role?.toUpperCase()?.includes('ADMIN')
+    );
     const isAuthor = (authorId) => {
         if (!user || authorId === undefined || authorId === null) return false;
         return String(user.id) === String(authorId);

@@ -151,12 +151,24 @@ export const api = {
         return parseApiResponse(res, 'Erro ao adicionar solução');
     },
 
-    async acceptSolution(problemId, solutionId) {
+    async acceptSolution(problemId, solutionId, options = {}) {
         const res = await fetch(`${API_BASE}/problems/${problemId}/solutions/${solutionId}/accept`, {
             method: 'PUT',
-            credentials: 'include'
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(options)
         });
-        return parseApiResponse(res, 'Erro ao aceitar solução');
+        return parseApiResponse(res, 'Erro ao processar solução');
+    },
+
+    async unacceptSolution(problemId) {
+        const res = await fetch(`${API_BASE}/problems/${problemId}/solutions/unaccept/accept`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ desmarcar: true })
+        });
+        return parseApiResponse(res, 'Erro ao desmarcar solução');
     },
 
     async editSolution(problemId, solutionId, content) {
@@ -179,7 +191,90 @@ export const api = {
         return parseApiResponse(res, 'Erro ao encerrar pergunta administrativamente');
     },
 
-    // 3. Busca Full-Text
+    // 3. Admin Endpoints
+    async getAdminStats() {
+        const res = await fetch(`${API_BASE}/admin/stats`, {
+            credentials: 'include'
+        });
+        return parseApiResponse(res, 'Erro ao obter métricas administrativas');
+    },
+
+    async getAdminUsers(params = {}) {
+        const queryParams = new URLSearchParams();
+        if (params.q) queryParams.append('q', params.q);
+        if (params.role) queryParams.append('role', params.role);
+        if (params.status) queryParams.append('status', params.status);
+        if (params.page) queryParams.append('page', params.page);
+        if (params.limit) queryParams.append('limit', params.limit);
+
+        const res = await fetch(`${API_BASE}/admin/users?${queryParams.toString()}`, {
+            credentials: 'include'
+        });
+        return parseApiResponse(res, 'Erro ao listar usuários');
+    },
+
+    async updateAdminUserRole(userId, role, jobTitle) {
+        const res = await fetch(`${API_BASE}/admin/users/${userId}/role`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ role, job_title: jobTitle })
+        });
+        return parseApiResponse(res, 'Erro ao atualizar papel do usuário');
+    },
+
+    async updateAdminUserStatus(userId, statusData) {
+        const res = await fetch(`${API_BASE}/admin/users/${userId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(statusData)
+        });
+        return parseApiResponse(res, 'Erro ao atualizar status do usuário');
+    },
+
+    async resendAdminUserVerification(userId) {
+        const res = await fetch(`${API_BASE}/admin/users/${userId}/resend-verification`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        return parseApiResponse(res, 'Erro ao reenviar e-mail de verificação');
+    },
+
+    async getAdminProblems(params = {}) {
+        const queryParams = new URLSearchParams();
+        if (params.q) queryParams.append('q', params.q);
+        if (params.category) queryParams.append('category', params.category);
+        if (params.status) queryParams.append('status', params.status);
+        if (params.has_solution !== undefined) queryParams.append('has_solution', params.has_solution);
+        if (params.page) queryParams.append('page', params.page);
+        if (params.limit) queryParams.append('limit', params.limit);
+
+        const res = await fetch(`${API_BASE}/admin/problems?${queryParams.toString()}`, {
+            credentials: 'include'
+        });
+        return parseApiResponse(res, 'Erro ao listar publicações para moderação');
+    },
+
+    async moderateAdminProblem(problemId, data) {
+        const res = await fetch(`${API_BASE}/admin/problems/${problemId}/moderation`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        });
+        return parseApiResponse(res, 'Erro ao moderar publicação');
+    },
+
+    async deleteAdminProblem(problemId) {
+        const res = await fetch(`${API_BASE}/admin/problems/${problemId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        return parseApiResponse(res, 'Erro ao excluir publicação');
+    },
+
+    // 4. Busca Full-Text
     async search(query) {
         try {
             const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query || '')}`, {

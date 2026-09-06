@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { AuthContext } from '../context/AuthContext';
 import { AppLayout } from '../components/layout/AppLayout';
@@ -8,51 +8,16 @@ import { CloseQuestionModal } from '../components/common/CloseQuestionModal';
 import { api } from '../services/api';
 import './PublicationDetail.css';
 
-const DEFAULT_PUB = {
-  id: '1',
-  author_id: 1,
-  title: 'Cliente não recebeu o e-mail de redefinição de senha',
-  author_name: 'Ana Martins',
-  author_role: 'Especialista em Suporte N2',
-  category: 'ATENDIMENTO',
-  status: 'RESOLVIDO',
-  description: 'Confirmamos o e-mail cadastrado no painel administrativo, reenviamos o token de redefinição e orientamos o cliente a checar as pastas de Spam e Lixeira eletrônica. Após 2 minutos o cliente confirmou o recebimento e concluiu o login.',
-  created_at: 'Hoje, às 09:42',
-  solutions: [
-    {
-      id: 1,
-      author_id: 2,
-      author_name: 'Rafael Costa',
-      author_role: 'Analista de suporte',
-      content: 'Ótima saída! Vou incluir esse passo no meu checklist.',
-      steps: [
-        '1. Valide o e-mail no painel do usuário (evitar digitação errada).',
-        '2. Dispare o reenvio manual do link de redefinição.',
-        '3. Solicite que o cliente busque por "noreply@empresa.com" na caixa de pesquisa.'
-      ],
-      is_primary: true
-    },
-    {
-      id: 2,
-      author_id: 3,
-      author_name: 'Mariana Silva',
-      author_role: 'Analista de redes',
-      content: 'Aqui na fila de pagamentos esse procedimento resolveu com agilidade.',
-      steps: [],
-      is_primary: false
-    }
-  ]
-};
-
 export const PublicationDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { user, isVerified, isTechnician, isAuthor } = useContext(AuthContext);
+  const { user, isVerified, isTechnician, isAdmin, isAuthor } = useContext(AuthContext);
 
-  const [publication, setPublication] = useState(DEFAULT_PUB);
+  const [publication, setPublication] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(24);
+  const [likesCount, setLikesCount] = useState(0);
   const [saved, setSaved] = useState(false);
   const [commentText, setCommentText] = useState('');
   
@@ -63,67 +28,57 @@ export const PublicationDetail = () => {
   const [editingText, setEditingText] = useState('');
   const [editLoading, setEditLoading] = useState(false);
 
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      authorId: 2,
-      author: 'Rafael Costa',
-      role: 'Analista de suporte',
-      initials: 'RC',
-      time: 'há 18 min',
-      text: 'Ótima saída! Vou incluir esse passo no meu checklist.',
-      isAccepted: true,
-      bg: 'var(--badge-yellow-bg)',
-      textColor: 'var(--badge-yellow-text)'
-    },
-    {
-      id: 2,
-      authorId: 3,
-      author: 'Mariana Silva',
-      role: 'Analista de redes',
-      initials: 'MS',
-      time: 'há 5 min',
-      text: 'Aqui na fila de pagamentos esse procedimento resolveu com agilidade.',
-      isAccepted: false,
-      bg: 'var(--badge-mint-bg)',
-      textColor: 'var(--badge-mint-text)'
-    }
-  ]);
+  const [comments, setComments] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
-    if (id && id !== '1') {
+    if (id) {
+      setLoading(true);
       api.getProblemById(id)
         .then((data) => {
           if (isMounted && data) {
             setPublication(data);
-            setLikesCount(data.likes_count || 24);
+            setLikesCount(data.likes_count || 0);
 
-            if (data.solutions && data.solutions.length > 0) {
-              const mapped = data.solutions.map((sol, index) => ({
-                id: sol.id || index + 1,
-                authorId: sol.author_id,
-                author: sol.author_name || 'Especialista em Suporte',
-                role: sol.author_role || 'Analista N2',
-                initials: (sol.author_name || 'ES').split(' ').map(n => n[0]).join('').slice(0, 2),
-                time: 'publicado no catálogo',
-                text: sol.content,
-                steps: sol.steps || [],
-                isAccepted: Boolean(sol.is_primary),
-                bg: sol.is_primary ? 'var(--badge-mint-bg)' : 'var(--badge-yellow-bg)',
-                textColor: sol.is_primary ? 'var(--badge-mint-text)' : 'var(--badge-yellow-text)'
-              }));
+            if (data.solutions && Array.isArray(data.solutions) && data.solutions.length > 0) {
+              const mapped = data.solutions.map((sol, index) => {
+                const authorName = sol.author_name || 'Especialista em Suporte';
+                const initials = authorName.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'ES';
+                const isAccepted = Boolean(sol.is_primary || String(sol.id) === String(data.accepted_solution_id));
+
+                return {
+                  id: sol.id || index + 1,
+                  authorId: sol.author_id,
+                  author: authorName,
+                  role: sol.author_role || 'Analista de Suporte',
+                  initials,
+                  time: sol.created_at ? new Date(sol.created_at).toLocaleDateString('pt-BR') : 'publicado no catálogo',
+                  text: sol.content,
+                  steps: Array.isArray(sol.steps) ? sol.steps : [],
+                  isAccepted,
+                  bg: isAccepted ? 'var(--badge-mint-bg)' : 'var(--badge-yellow-bg)',
+                  textColor: isAccepted ? 'var(--badge-mint-text)' : 'var(--badge-yellow-text)'
+                };
+              });
               setComments(mapped);
+            } else {
+              setComments([]);
             }
           }
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.error('Erro ao carregar publicação:', err);
+          if (isMounted) setPublication(null);
+        })
+        .finally(() => {
+          if (isMounted) setLoading(false);
+        });
     }
 
     return () => { isMounted = false; };
   }, [id]);
 
-  const isClosedAdmin = publication?.status === 'FECHADA_ADMIN';
+  const isClosedAdmin = publication?.status === 'FECHADA_ADMIN' || publication?.status === 'FECHADA_ADMINISTRATIVAMENTE';
   const isQuestionAuthor = isAuthor(publication?.author_id);
 
   const handleLike = () => {
@@ -159,13 +114,8 @@ export const PublicationDetail = () => {
     }
 
     const newText = commentText.trim();
-    if (!newText) {
-      showToast('Por favor, digite a descrição da sua solução.', 'error');
-      return;
-    }
-
-    if (newText.length < 20) {
-      showToast('A solução deve ter no mínimo 20 caracteres para garantir clareza.', 'error');
+    if (newText.length < 10) {
+      showToast('A solução deve ter no mínimo 10 caracteres para garantir clareza.', 'error');
       return;
     }
 
@@ -177,24 +127,26 @@ export const PublicationDetail = () => {
         id: tempId,
         authorId: user?.id,
         author: user?.name || 'Você',
-        role: user?.role || 'Especialista em Suporte',
-        initials: (user?.name || 'VC').split(' ').map(n => n[0]).join('').slice(0, 2),
+        role: user?.role || user?.job_title || 'Analista de Suporte',
+        initials: (user?.name || 'VC').split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase(),
         time: 'agora mesmo',
         text: newText,
+        steps: [],
         isAccepted: false,
-        bg: 'var(--badge-mint-bg)',
-        textColor: 'var(--badge-mint-text)'
+        bg: 'var(--badge-yellow-bg)',
+        textColor: 'var(--badge-yellow-text)'
       }
     ]);
     setCommentText('');
 
     try {
-      const created = await api.addSolution(id || '1', {
+      const created = await api.addSolution(id || publication?.id, {
         content: newText,
         steps: [`1. ${newText}`]
       });
-      if (created && created.id) {
-        setComments((prev) => prev.map(c => c.id === tempId ? { ...c, id: created.id } : c));
+      if (created && (created.id || created.solution_id)) {
+        const actualId = created.id || created.solution_id;
+        setComments((prev) => prev.map(c => c.id === tempId ? { ...c, id: actualId } : c));
       }
       showToast('Solução colaborativa enviada com sucesso!', 'success');
     } catch (err) {
@@ -204,10 +156,10 @@ export const PublicationDetail = () => {
     }
   };
 
-  // ABAC: Aceitar solução como resposta oficial (apenas autor da pergunta)
+  // ABAC / RBAC: Aceitar solução como resposta oficial (autor da pergunta ou Admin)
   const handleAcceptSolution = async (solutionId) => {
-    if (!isQuestionAuthor) {
-      showToast('Apenas o autor da pergunta pode aceitar uma solução.', 'error');
+    if (!isQuestionAuthor && !isAdmin) {
+      showToast('Apenas o autor da pergunta ou um administrador podem aceitar uma solução.', 'error');
       return;
     }
 
@@ -217,7 +169,7 @@ export const PublicationDetail = () => {
     }
 
     try {
-      await api.acceptSolution(publication.id || id, solutionId);
+      await api.acceptSolution(publication?.id || id, solutionId);
       
       // Atualiza o estado local
       setComments((prev) =>
@@ -229,9 +181,33 @@ export const PublicationDetail = () => {
         }))
       );
       setPublication((prev) => ({ ...prev, status: 'RESOLVIDO' }));
-      showToast('Solução marcada como aceita pelo autor!', 'success');
+      showToast(isAdmin && !isQuestionAuthor ? 'Solução validada e homologada como Oficial pelo Administrador!' : 'Solução marcada como aceita pelo autor!', 'success');
     } catch (err) {
       showToast(err.message || 'Erro ao aceitar solução.', 'error');
+    }
+  };
+
+  // Desmarcar Solução Oficial
+  const handleUnacceptSolution = async () => {
+    if (!isQuestionAuthor && !isAdmin) {
+      showToast('Apenas o autor da pergunta ou um administrador podem desmarcar a solução.', 'error');
+      return;
+    }
+
+    try {
+      await api.unacceptSolution(publication?.id || id);
+      setComments((prev) =>
+        prev.map((c) => ({
+          ...c,
+          isAccepted: false,
+          bg: 'var(--badge-yellow-bg)',
+          textColor: 'var(--badge-yellow-text)'
+        }))
+      );
+      setPublication((prev) => ({ ...prev, status: 'ABERTA' }));
+      showToast('Solução oficial desmarcada com sucesso.', 'info');
+    } catch (err) {
+      showToast(err.message || 'Erro ao desmarcar solução.', 'error');
     }
   };
 
@@ -247,7 +223,7 @@ export const PublicationDetail = () => {
     setEditLoading(true);
 
     try {
-      await api.editSolution(publication.id || id, solutionId, editingText.trim());
+      await api.editSolution(publication?.id || id, solutionId, editingText.trim());
       setComments((prev) =>
         prev.map((c) => (String(c.id) === String(solutionId) ? { ...c, text: editingText.trim() } : c))
       );
@@ -261,16 +237,20 @@ export const PublicationDetail = () => {
     }
   };
 
-  // RBAC: Encerramento Administrativo (Técnico / Admin)
+  // RBAC: Encerrar administrativamente (Técnicos e Admins)
   const handleAdminClose = async (reason) => {
+    if (!reason || reason.trim().length < 15) {
+      showToast('Justificativa técnica com no mínimo 15 caracteres é obrigatória.', 'error');
+      return;
+    }
+
     setClosingAdminLoading(true);
     try {
-      await api.closeProblemAdmin(publication.id || id, reason);
+      await api.closeProblemAdmin(publication?.id || id, reason);
       setPublication((prev) => ({
         ...prev,
-        status: 'FECHADA_ADMIN',
-        closing_reason: reason,
-        closed_at: new Date().toLocaleDateString('pt-BR')
+        status: 'FECHADA_ADMINISTRATIVAMENTE',
+        closing_reason: reason
       }));
       setShowCloseModal(false);
       showToast('Pergunta encerrada administrativamente com sucesso.', 'success');
@@ -281,22 +261,32 @@ export const PublicationDetail = () => {
     }
   };
 
-  const primarySolution = publication?.solutions?.find(s => s.is_primary) || publication?.solutions?.[0] || {
-    content: publication?.description || 'Confirmamos o e-mail cadastrado no painel administrativo.',
-    steps: [
-      '1. Valide o e-mail no painel do usuário (evitar digitação errada).',
-      '2. Dispare o reenvio manual do link de redefinição.',
-      '3. Solicite que o cliente busque por "noreply@empresa.com" na caixa de pesquisa.'
-    ]
-  };
+  if (loading) {
+    return (
+      <AppLayout>
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--ink)', fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 700 }}>
+          Carregando publicação...
+        </div>
+      </AppLayout>
+    );
+  }
 
-  const primarySteps = Array.isArray(primarySolution.steps) && primarySolution.steps.length > 0 
-    ? primarySolution.steps 
-    : [
-      '1. Valide o e-mail no painel do usuário (evitar digitação errada).',
-      '2. Dispare o reenvio manual do link de redefinição.',
-      '3. Solicite que o cliente busque por "noreply@empresa.com" na caixa de pesquisa.'
-    ];
+  if (!publication) {
+    return (
+      <AppLayout>
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--ink)' }}>
+          <h2 style={{ fontFamily: 'var(--font-heading)', marginBottom: '10px' }}>Publicação não encontrada</h2>
+          <p style={{ color: 'var(--foreground-secondary)', marginBottom: '20px' }}>A publicação solicitada não existe ou foi removida.</p>
+          <button onClick={() => navigate('/')} className="desktop-create-btn" style={{ margin: '0 auto' }}>
+            Voltar ao Início
+          </button>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  const primarySolution = publication?.solutions?.find(s => s.is_primary) || publication?.solutions?.[0] || null;
+  const primarySteps = Array.isArray(primarySolution?.steps) ? primarySolution.steps : [];
 
   return (
     <AppLayout>
@@ -315,7 +305,7 @@ export const PublicationDetail = () => {
           <button
             type="button"
             className="pubdetail-more-btn pressable"
-            onClick={() => showToast('Opções: Copiar link, reportar erro ou imprimir.', 'info')}
+            onClick={() => showToast('Opções: Copiar link ou compartilhar.', 'info')}
             aria-label="Mais ações"
           >
             <Icon name="ellipsis" size={19} color="var(--ink)" />
@@ -335,7 +325,7 @@ export const PublicationDetail = () => {
               <span>Voltar para publicações</span>
             </button>
             <span className="pubdetail-breadcrumb-sep">/</span>
-            <span className="pubdetail-breadcrumb-cat">{publication?.category || 'ATENDIMENTO'}</span>
+            <span className="pubdetail-breadcrumb-cat">{publication.category || 'ATENDIMENTO'}</span>
           </div>
 
           {/* 2-Column Split for Desktop */}
@@ -351,7 +341,7 @@ export const PublicationDetail = () => {
                     <span>TÓPICO ENCERRADO ADMINISTRATIVAMENTE</span>
                   </div>
                   <p className="admin-closure-reason">
-                    <strong>Motivo:</strong> {publication?.closing_reason || 'Encerrado formalmente pela equipe de suporte técnico.'}
+                    <strong>Motivo:</strong> {publication.closing_reason || 'Encerrado formalmente pela equipe de suporte técnico.'}
                   </p>
                   <span className="admin-closure-meta">
                     Este tópico está congelado para novas interações e respostas.
@@ -362,36 +352,44 @@ export const PublicationDetail = () => {
               {/* Case Title */}
               <div className="pubdetail-title-block">
                 <div className="pubdetail-badge-row">
-                  <span className="pubdetail-cat-badge">{publication?.category || 'GERAL'}</span>
+                  <span className="pubdetail-cat-badge">{publication.category || 'GERAL'}</span>
                   <span className={`pubdetail-status-badge ${isClosedAdmin ? 'closed' : ''}`}>
-                    {publication?.status || 'ABERTO'}
+                    {publication.status || 'ABERTO'}
                   </span>
                 </div>
-                <h1 className="pubdetail-case-title">{publication?.title || 'Carregando detalhes...'}</h1>
+                <h1 className="pubdetail-case-title">{publication.title}</h1>
               </div>
 
-              {/* Attachment Banner */}
-              <div className="pubdetail-attachment-banner">
-                <div className="attachment-badge">
-                  <Icon name="image-up" size={15} color="var(--accent-primary)" />
-                  <span>PRINT / EVIDÊNCIA ANEXADA</span>
-                </div>
-              </div>
-
-              {/* Solution Card */}
+              {/* Problem Description Card */}
               <section className="pubdetail-solution-card">
                 <div className="solution-heading">
                   <Icon name="circle-check-big" size={20} color="var(--green-leaf)" />
-                  <span className="solution-label">COMO FOI SOLUCIONADO</span>
+                  <span className="solution-label">DESCRIÇÃO DO PROCEDIMENTO / PROBLEMA</span>
                 </div>
-                <p className="solution-text">{publication?.description || primarySolution.content}</p>
+                <p className="solution-text">{publication.description}</p>
 
-                <div className="solution-steps-box">
-                  <span className="steps-subheading">Passo a passo recomendado:</span>
-                  {primarySteps.map((st, i) => (
-                    <div key={i} className="solution-step-item">{typeof st === 'string' ? st : JSON.stringify(st)}</div>
-                  ))}
-                </div>
+                {primarySolution && (
+                  <div style={{ marginTop: '16px', borderTop: '1px solid var(--border-subtle)', paddingTop: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span className="steps-subheading" style={{ color: 'var(--green-leaf)', fontWeight: 600 }}>Solução Principal Registrada:</span>
+                      {(primarySolution.author_name || primarySolution.author) && (
+                        <span style={{ fontSize: '12px', color: 'var(--foreground-muted)' }}>
+                          Por: <strong>{primarySolution.author_name || primarySolution.author}</strong>
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ marginTop: '6px', fontSize: '14px', color: 'var(--ink)' }}>{primarySolution.content || primarySolution.text}</p>
+                    
+                    {primarySteps.length > 0 && (
+                      <div className="solution-steps-box" style={{ marginTop: '10px' }}>
+                        <span className="steps-subheading">Passos:</span>
+                        {primarySteps.map((st, i) => (
+                          <div key={i} className="solution-step-item">{typeof st === 'string' ? st : JSON.stringify(st)}</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </section>
 
               {/* Solutions / Alternative Methods Section */}
@@ -401,88 +399,116 @@ export const PublicationDetail = () => {
                   <span className="comments-count">{comments.length}</span>
                 </div>
 
-                <div className="comments-list">
-                  {comments.map((comm) => (
-                    <div key={comm.id} className="comment-card">
-                      <div className="comment-header">
-                        <div
-                          className="comment-avatar"
-                          style={{ backgroundColor: comm.bg, color: comm.textColor }}
-                        >
-                          <span>{comm.initials}</span>
-                        </div>
-                        <span className="comment-author-name">{comm.author}</span>
-                        <span className="comment-time">{comm.time}</span>
-
-                        {/* ABAC: Editar Solução (Apenas o autor da solução) */}
-                        {isAuthor(comm.authorId) && !isClosedAdmin && editingSolutionId !== comm.id && (
-                          <button
-                            type="button"
-                            className="btn-edit-solution"
-                            onClick={() => handleStartEdit(comm)}
-                            aria-label="Editar resposta"
+                {comments.length === 0 ? (
+                  <div style={{
+                    padding: '24px',
+                    textAlign: 'center',
+                    backgroundColor: 'var(--surface-primary)',
+                    border: '1px dashed var(--border-subtle)',
+                    borderRadius: '16px',
+                    color: 'var(--foreground-secondary)',
+                    fontSize: '14px'
+                  }}>
+                    Nenhuma resposta colaborativa foi enviada para esta publicação ainda. Seja o primeiro a responder!
+                  </div>
+                ) : (
+                  <div className="comments-list">
+                    {comments.map((comm) => (
+                      <div key={comm.id} className="comment-card">
+                        <div className="comment-header">
+                          <div
+                            className="comment-avatar"
+                            style={{ backgroundColor: comm.bg, color: comm.textColor }}
                           >
-                            <Icon name="edit" size={13} />
-                            <span>Editar</span>
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Conteúdo ou formulário de edição in-place */}
-                      {editingSolutionId === comm.id ? (
-                        <div className="solution-edit-box">
-                          <textarea
-                            className="solution-edit-textarea"
-                            value={editingText}
-                            onChange={(e) => setEditingText(e.target.value)}
-                            disabled={editLoading}
-                          />
-                          <div className="solution-edit-actions">
-                            <button
-                              type="button"
-                              className="btn-edit-cancel"
-                              onClick={() => setEditingSolutionId(null)}
-                              disabled={editLoading}
-                            >
-                              Cancelar
-                            </button>
-                            <button
-                              type="button"
-                              className="btn-edit-save"
-                              onClick={() => handleSaveEdit(comm.id)}
-                              disabled={editLoading || !editingText.trim()}
-                            >
-                              {editLoading ? 'Salvando...' : 'Salvar Alterações'}
-                            </button>
+                            <span>{comm.initials}</span>
                           </div>
-                        </div>
-                      ) : (
-                        <p className="comment-text">{comm.text}</p>
-                      )}
+                          <span className="comment-author-name">{comm.author}</span>
+                          <span className="comment-time">{comm.time}</span>
 
-                      {/* ABAC: Aceitar Solução (Apenas autor da pergunta) & Badge de Solução Aceita */}
-                      <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {comm.isAccepted ? (
-                          <span className="badge-accepted-solution">
-                            <Icon name="check-circle" size={14} color="var(--green-leaf)" />
-                            Solução Aceita pelo Autor
-                          </span>
-                        ) : (
-                          isQuestionAuthor && !isClosedAdmin && (
+                          {/* ABAC: Editar Solução (Apenas o autor da solução) */}
+                          {isAuthor(comm.authorId) && !isClosedAdmin && editingSolutionId !== comm.id && (
                             <button
                               type="button"
-                              className="btn-accept-solution pressable"
-                              onClick={() => handleAcceptSolution(comm.id)}
+                              className="btn-edit-solution"
+                              onClick={() => handleStartEdit(comm)}
+                              aria-label="Editar resposta"
                             >
-                              <Icon name="check" size={14} />
-                              Marcar como Solução Aceita
+                              <Icon name="edit" size={13} />
+                              <span>Editar</span>
                             </button>
-                          )
+                          )}
+                        </div>
+
+                        {/* Conteúdo ou formulário de edição in-place */}
+                        {editingSolutionId === comm.id ? (
+                          <div className="solution-edit-box">
+                            <textarea
+                              className="solution-edit-textarea"
+                              value={editingText}
+                              onChange={(e) => setEditingText(e.target.value)}
+                              disabled={editLoading}
+                            />
+                            <div className="solution-edit-actions">
+                              <button
+                                type="button"
+                                className="btn-edit-cancel"
+                                onClick={() => setEditingSolutionId(null)}
+                                disabled={editLoading}
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-edit-save"
+                                onClick={() => handleSaveEdit(comm.id)}
+                                disabled={editLoading || !editingText.trim()}
+                              >
+                                {editLoading ? 'Salvando...' : 'Salvar Alterações'}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="comment-text">{comm.text}</p>
                         )}
+
+                        {/* ABAC & RBAC: Aceitar / Desmarcar Solução & Badge de Solução Aceita */}
+                        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          {comm.isAccepted ? (
+                            <>
+                              <span className="badge-accepted-solution">
+                                <Icon name="check-circle" size={14} color="var(--green-leaf)" />
+                                Solução Oficial Aceita
+                              </span>
+                              {(isQuestionAuthor || isAdmin) && !isClosedAdmin && (
+                                <button
+                                  type="button"
+                                  className="btn-edit-solution"
+                                  style={{ color: '#EF4444' }}
+                                  onClick={handleUnacceptSolution}
+                                  title="Desmarcar esta resposta como solução oficial"
+                                >
+                                  <Icon name="x" size={13} />
+                                  <span>Desmarcar</span>
+                                </button>
+                              )}
+                            </>
+                          ) : (
+                            (isQuestionAuthor || isAdmin) && !isClosedAdmin && (
+                              <button
+                                type="button"
+                                className="btn-accept-solution pressable"
+                                onClick={() => handleAcceptSolution(comm.id)}
+                              >
+                                <Icon name="check" size={14} />
+                                <span>{isAdmin && !isQuestionAuthor ? '⭐ Validar como Solução Oficial (Admin)' : 'Marcar como Solução Aceita'}</span>
+                              </button>
+                            )
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Add Solution / Comment Form */}
                 {isClosedAdmin ? (
@@ -499,7 +525,7 @@ export const PublicationDetail = () => {
                   <form onSubmit={handleAddComment} className="add-comment-form">
                     <input
                       type="text"
-                      placeholder="Escreva um comentário ou solução alternativa..."
+                      placeholder="Escreva uma resposta ou solução para este chamado..."
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
                       className="comment-input"
@@ -523,18 +549,18 @@ export const PublicationDetail = () => {
                 <div className="author-card-top">
                   <div className="pubdetail-author-avatar">
                     <span className="author-avatar-text">
-                      {(publication?.author_name || 'Ana Martins').split(' ').map(n => n[0]).join('').slice(0, 2)}
+                      {(publication.author_name || 'Usuário').split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                     </span>
                   </div>
                   <div className="author-card-meta">
                     <span className="author-label">PUBLICADO POR</span>
-                    <h3 className="author-name">{publication?.author_name || 'Ana Martins'}</h3>
-                    <span className="author-role">{publication?.author_role || 'Especialista em Suporte N2'}</span>
+                    <h3 className="author-name">{publication.author_name || 'Usuário'}</h3>
+                    <span className="author-role">{publication.author_role || publication.author_job_title || 'Analista de Suporte'}</span>
                   </div>
                 </div>
                 <div className="author-card-date">
-                  <Icon name="clock" size={14} color="var(--foreground-muted)" />
-                  <span>Cadastrado no catálogo oficial</span>
+                  <Icon name="history" size={14} color="var(--foreground-muted)" />
+                  <span>{publication.created_at ? new Date(publication.created_at).toLocaleDateString('pt-BR') : 'Cadastrado no catálogo'}</span>
                 </div>
               </div>
 
@@ -574,14 +600,14 @@ export const PublicationDetail = () => {
                   </button>
 
                   {/* RBAC: Ação Administrativa para Técnicos e Admins */}
-                  {isTechnician && !isClosedAdmin && (
+                  {(isTechnician || isAdmin) && !isClosedAdmin && (
                     <button
                       type="button"
                       className="action-pill-btn btn-close-admin pressable"
                       onClick={() => setShowCloseModal(true)}
                     >
                       <Icon name="shield-check" size={17} color="#DC2626" />
-                      <span>Encerrar Pergunta (Técnico)</span>
+                      <span>Encerrar Pergunta (Admin/Técnico)</span>
                     </button>
                   )}
                 </div>
@@ -601,3 +627,5 @@ export const PublicationDetail = () => {
     </AppLayout>
   );
 };
+
+export default PublicationDetail;

@@ -56,6 +56,96 @@
   gap: 24px;
 }
 
+.home-admin-banner {
+  background: linear-gradient(135deg, #14281F 0%, #1B382B 100%);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.home-admin-banner:hover {
+  transform: translateY(-2px);
+  border-color: #10B981;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+
+.home-admin-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.home-admin-banner-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.home-admin-banner-title {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-admin-badge {
+  background: #10B981;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.home-admin-banner-desc {
+  font-size: 12px;
+  color: #A3B899;
+  margin-top: 2px;
+}
+
+.home-admin-banner-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #EBF875;
+  color: #0D1F17;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .home-admin-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .home-admin-banner-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media (min-width: 1024px) {
   .home-content {
     padding: 36px 0;

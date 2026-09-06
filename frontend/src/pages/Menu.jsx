@@ -8,7 +8,7 @@ import { Icon } from '../components/common/Icons';
 import './Menu.css';
 
 export const Menu = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, isAdmin } = useContext(AuthContext);
   const { isDarkMode, toggleTheme } = useTheme();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -52,6 +52,28 @@ export const Menu = () => {
             </div>
             <Icon name="chevron-right" size={18} color="#DFF3E4" />
           </Link>
+
+          {/* Section: Administração (Exclusivo ROLE_ADMIN) */}
+          {isAdmin && (
+            <section className="menu-section admin-menu-section">
+              <h3 className="menu-section-heading">Administração do Sistema</h3>
+              <div className="menu-items-list">
+                <Link to="/admin" className="menu-item-card pressable admin-menu-card">
+                  <div className="menu-item-icon-box box-admin">
+                    <Icon name="shield-check" size={19} color="#FFFFFF" />
+                  </div>
+                  <div className="menu-item-copy">
+                    <span className="menu-item-title" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      Console do Administrador
+                      <span className="menu-admin-badge">ADMIN</span>
+                    </span>
+                    <span className="menu-item-desc">Métricas, gestão de usuários e moderação</span>
+                  </div>
+                  <Icon name="chevron-right" size={18} color="var(--foreground-muted)" />
+                </Link>
+              </div>
+            </section>
+          )}
 
           {/* Section: Sua Conta */}
           <section className="menu-section">

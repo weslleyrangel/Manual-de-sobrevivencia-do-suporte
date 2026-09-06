@@ -144,4 +144,26 @@
     font-weight: 700;
     color: var(--badge-yellow-text);
   }
+
+  .desktop-admin-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    color: #10B981;
+    padding: 8px 14px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .desktop-admin-link:hover {
+    background: rgba(16, 185, 129, 0.22);
+    transform: translateY(-1px);
+    color: #059669;
+  }
 }

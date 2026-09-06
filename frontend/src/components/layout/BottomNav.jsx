@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import { Icon } from '../common/Icons';
 import './BottomNav.css';
 
 export const BottomNav = () => {
+  const { isAdmin } = useContext(AuthContext);
+
   const navItems = [
     { to: '/', label: 'Início', icon: 'house' },
     { to: '/search', label: 'Pesquisa', icon: 'search' },
     { to: '/profile', label: 'Meu perfil', icon: 'circle-user-round' },
+    ...(isAdmin ? [{ to: '/admin', label: 'Admin', icon: 'shield-check' }] : []),
     { to: '/menu', label: 'Menu', icon: 'menu' },
   ];
 

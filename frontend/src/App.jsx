@@ -17,6 +17,13 @@ const NewPublication = React.lazy(() => import('./pages/NewPublication').then(m 
 const PublicationDetail = React.lazy(() => import('./pages/PublicationDetail').then(m => ({ default: m.PublicationDetail })));
 const Menu = React.lazy(() => import('./pages/Menu').then(m => ({ default: m.Menu })));
 
+// Admin Pages & Layout
+const AdminRoute = React.lazy(() => import('./components/AdminRoute').then(m => ({ default: m.AdminRoute })));
+const AdminLayout = React.lazy(() => import('./components/AdminLayout').then(m => ({ default: m.AdminLayout })));
+const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const AdminUsers = React.lazy(() => import('./pages/admin/AdminUsers').then(m => ({ default: m.AdminUsers })));
+const AdminPublications = React.lazy(() => import('./pages/admin/AdminPublications').then(m => ({ default: m.AdminPublications })));
+
 function App() {
   return (
     <Suspense
@@ -55,6 +62,20 @@ function App() {
         <Route path="/new-publication" element={<NewPublication />} />
         <Route path="/publication/:id" element={<PublicationDetail />} />
         <Route path="/menu" element={<Menu />} />
+
+        {/* Protected Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="publications" element={<AdminPublications />} />
+        </Route>
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
