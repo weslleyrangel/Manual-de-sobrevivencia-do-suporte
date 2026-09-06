@@ -24,6 +24,13 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/itsupport
       - PORT=3000
+      - MAILTRAP_HOST=${MAILTRAP_HOST:-sandbox.smtp.mailtrap.io}
+      - MAILTRAP_PORT=${MAILTRAP_PORT:-2525}
+      - MAILTRAP_USER=${MAILTRAP_USER:-}
+      - MAILTRAP_PASS=${MAILTRAP_PASS:-}
+      - MAILTRAP_TOKEN=${MAILTRAP_TOKEN:-}
+      - MAILTRAP_SENDER_EMAIL=${MAILTRAP_SENDER_EMAIL:-no-reply@suporte.com}
+      - MAILTRAP_SENDER_NAME=${MAILTRAP_SENDER_NAME:-Manual de Sobrevivência do Suporte}
     depends_on:
       - db
     volumes:

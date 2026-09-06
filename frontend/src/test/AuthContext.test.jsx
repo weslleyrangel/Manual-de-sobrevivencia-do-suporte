@@ -10,7 +10,7 @@ const TestConsumer = () => {
     <div>
       <span data-testid="auth-status">{isAuthenticated ? 'Autenticado' : 'Desconectado'}</span>
       <span data-testid="user-name">{user?.name || 'Sem usuário'}</span>
-      <button onClick={login}>Fazer Login</button>
+      <button onClick={() => login({ id: 1, name: 'Usuário Teste' })}>Fazer Login</button>
       <button onClick={logout}>Fazer Logout</button>
     </div>
   );

@@ -1,6 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { Icon } from '../components/common/Icons';
 import { api } from '../services/api';
@@ -13,17 +12,17 @@ export const ProfessionalSetup = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { login } = useContext(AuthContext);
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleFinish = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    const draft = JSON.parse(sessionStorage.getItem('register_draft') || '{}');
-    if (!draft.email || !draft.password) {
+    const draft = location.state || {};
+    if (!draft.fullName?.trim() || !draft.email?.trim() || !draft.password) {
       const msg = 'Dados cadastrais incompletos. Por favor, retorne à etapa anterior.';
       setError(msg);
       showToast(msg, 'error');
@@ -33,19 +32,18 @@ export const ProfessionalSetup = () => {
 
     try {
       const payload = {
-        name: draft.fullName || 'Usuário',
-        email: draft.email || 'voce@empresa.com',
-        password: draft.password || '123456',
+        name: draft.fullName.trim(),
+        email: draft.email.trim(),
+        password: draft.password,
         area,
         role,
         level
       };
 
       const result = await api.register(payload);
-      sessionStorage.removeItem('register_draft');
-      if (login) login(result?.user);
-      showToast(result?.message || 'Cadastro realizado com sucesso!', 'success');
-      navigate('/');
+
+      showToast('Cadastro realizado! Verifique seu e-mail para ativar a conta.', 'success');
+      navigate('/check-email', { state: { email: result?.email || payload.email } });
     } catch (err) {
       const errMsg = err.message || 'Falha ao concluir cadastro. Tente novamente.';
       setError(errMsg);

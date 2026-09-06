@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon } from '../components/common/Icons';
 import { useToast } from '../context/ToastContext';
+import { api } from '../services/api';
 import './ForgotPassword.css';
 
 export const ForgotPassword = () => {
@@ -11,7 +12,7 @@ export const ForgotPassword = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email.trim() || !emailRegex.test(email.trim())) {
@@ -20,11 +21,15 @@ export const ForgotPassword = () => {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await api.forgotPassword(email.trim());
       setSubmitted(true);
-      showToast('Link de recuperação enviado com sucesso!', 'success');
-    }, 600);
+      showToast('Instruções de redefinição enviadas com sucesso!', 'success');
+    } catch (err) {
+      showToast(err.message || 'Falha ao solicitar recuperação de senha.', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

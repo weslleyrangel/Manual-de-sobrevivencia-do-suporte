@@ -9,10 +9,10 @@ import './Profile.css';
 export const Profile = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [pubCount, setPubCount] = useState(20);
+  const [pubCount, setPubCount] = useState(0);
 
-  const name = user?.name || 'Wesley Rangel';
-  const role = user?.role || 'Especialista N2';
+  const name = user?.name || 'Usuário';
+  const role = user?.role || user?.job_title || 'Membro';
   
   // Extract initials
   const initials = name
@@ -20,13 +20,17 @@ export const Profile = () => {
     .filter(Boolean)
     .slice(0, 2)
     .map((n) => n[0].toUpperCase())
-    .join('') || 'WR';
+    .join('') || 'U';
 
   useEffect(() => {
     let isMounted = true;
-    api.getProblems({ author_id: user?.id || 1 })
+    if (!user?.id) {
+      setPubCount(0);
+      return;
+    }
+    api.getProblems({ author_id: user.id })
       .then((data) => {
-        if (isMounted && data && data.length > 0) {
+        if (isMounted && Array.isArray(data)) {
           setPubCount(data.length);
         }
       })

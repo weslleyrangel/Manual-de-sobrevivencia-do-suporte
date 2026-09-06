@@ -50,16 +50,12 @@ export const MyPublications = () => {
     api.getProblems({ author_id: user.id, limit: 100 })
       .then((data) => {
         if (isMounted) {
-          if (Array.isArray(data) && data.length > 0) {
-            setPublications(data);
-          } else {
-            setPublications(fallbackPubs);
-          }
+          setPublications(Array.isArray(data) ? data : []);
         }
       })
       .catch((err) => {
         console.warn('Erro ao carregar publicações do usuário:', err);
-        if (isMounted) setPublications(fallbackPubs);
+        if (isMounted) setPublications([]);
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -68,7 +64,7 @@ export const MyPublications = () => {
     return () => { isMounted = false; };
   }, [user, authLoading]);
 
-  const currentList = publications.length > 0 ? publications : fallbackPubs;
+  const currentList = user ? publications : fallbackPubs;
 
   const filteredPubs = currentList.filter((pub) => {
     if (activeTab === 'drafts') return pub.is_draft;

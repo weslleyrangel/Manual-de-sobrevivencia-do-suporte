@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Icon } from '../components/common/Icons';
@@ -8,19 +8,23 @@ import './Login.css';
 
 export const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const auth = useContext(AuthContext);
   const { showToast } = useToast();
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(location.state?.email || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
+  const [isUnverified, setIsUnverified] = useState(false);
+  const [resending, setResending] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsUnverified(false);
 
     if (!email.trim() || !password.trim()) {
       setError('Por favor, preencha todos os campos obrigatórios.');
@@ -34,17 +38,33 @@ export const Login = () => {
       showToast(`Login realizado com sucesso! Bem-vindo(a), ${data?.user?.name || ''}.`, 'success');
       navigate('/');
     } catch (err) {
-      setError(err.message || 'E-mail ou senha incorretos');
+      const errMsg = err.message || 'E-mail ou senha incorretos';
+      setError(errMsg);
+      if (errMsg.toLowerCase().includes('não verificada') || errMsg.toLowerCase().includes('verifique seu e-mail')) {
+        setIsUnverified(true);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleQuickLogin = (userEmail) => {
-    setEmail(userEmail);
-    setPassword('123');
-    setError('');
+  const handleResend = async () => {
+    if (!email.trim()) {
+      showToast('Informe o seu e-mail para reenviar o link de ativação.', 'error');
+      return;
+    }
+    setResending(true);
+    try {
+      await api.resendVerification(email.trim());
+      showToast('Novo link de ativação enviado! Verifique sua caixa de entrada.', 'success');
+    } catch (err) {
+      showToast(err.message || 'Erro ao reenviar e-mail.', 'error');
+    } finally {
+      setResending(false);
+    }
   };
+
+
 
   return (
     <div className="login-viewport">
@@ -116,13 +136,6 @@ export const Login = () => {
                 <div className="login-brand-icon" />
                 <span className="login-brand-name">Manual de Sobrevivência</span>
               </div>
-              <button
-                type="button"
-                className="login-help-badge pressable"
-                onClick={() => showToast('Credenciais de teste: qualquer usuário com a senha: 123', 'info')}
-              >
-                PRECISA DE AJUDA?
-              </button>
             </div>
 
             <div className="login-hero-box">
@@ -133,10 +146,51 @@ export const Login = () => {
               </p>
             </div>
 
-            {error && (
+            {location.state?.verifiedSuccess && (
+              <div className="login-verified-banner animate-fade">
+                <div className="login-verified-icon">
+                  <Icon name="badge-check" size={22} color="var(--green-leaf)" />
+                </div>
+                <div className="login-verified-content">
+                  <strong>E-mail verificado com sucesso! 🎉</strong>
+                  <p>Sua conta está ativa. Digite sua senha abaixo para acessar o manual.</p>
+                </div>
+              </div>
+            )}
+
+            {location.state?.verifiedError && (
               <div className="login-error-msg">
                 <Icon name="x" size={16} color="var(--color-error-foreground)" />
-                <span>{error}</span>
+                <span>{location.state.verifiedError}</span>
+              </div>
+            )}
+
+            {error && (
+              <div className="login-error-msg" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Icon name="x" size={16} color="var(--color-error-foreground)" />
+                  <span>{error}</span>
+                </div>
+                {isUnverified && (
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={resending}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--accent-primary)',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      textDecoration: 'underline',
+                      cursor: 'pointer',
+                      padding: 0,
+                      marginTop: '4px'
+                    }}
+                  >
+                    {resending ? 'Reenviando e-mail...' : '📨 Clique aqui para reenviar o e-mail de ativação'}
+                  </button>
+                )}
               </div>
             )}
 
@@ -204,40 +258,7 @@ export const Login = () => {
               </button>
             </form>
 
-            {/* Quick Select Pill Toolbar for Local Dev */}
-            <div className="quick-users-box">
-              <div className="quick-users-title">Acesso Rápido para Testes:</div>
-              <div className="quick-users-grid">
-                <button
-                  type="button"
-                  className="quick-user-pill"
-                  onClick={() => handleQuickLogin('admin@suporte.com')}
-                >
-                  👑 Weslley (Admin)
-                </button>
-                <button
-                  type="button"
-                  className="quick-user-pill"
-                  onClick={() => handleQuickLogin('ana.martins@suporte.com')}
-                >
-                  🛡️ Ana (Técnico)
-                </button>
-                <button
-                  type="button"
-                  className="quick-user-pill"
-                  onClick={() => handleQuickLogin('rafael.costa@suporte.com')}
-                >
-                  👨‍💻 Rafael (N1)
-                </button>
-                <button
-                  type="button"
-                  className="quick-user-pill"
-                  onClick={() => handleQuickLogin('mariana.silva@suporte.com')}
-                >
-                  👩‍💻 Mariana (Redes)
-                </button>
-              </div>
-            </div>
+
 
             <footer className="login-footer">
               <span className="login-footer-prompt">Ainda não tem uma conta?</span>

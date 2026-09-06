@@ -160,7 +160,7 @@ export const Search = () => {
                       <h3 className="result-title">{article.title}</h3>
                       <p className="result-snippet">{article.snippet || article.description}</p>
                       <span className="result-meta">
-                        Por {article.author_name || 'Weslley Rangel'} · {article.views_count || 120} visualizações
+                        Por {article.author_name || 'Especialista'} · {article.views_count || 0} visualizações
                       </span>
                     </Link>
                   ))

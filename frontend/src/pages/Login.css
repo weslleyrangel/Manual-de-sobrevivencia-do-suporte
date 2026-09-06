@@ -545,3 +545,35 @@
   cursor: pointer;
   color: var(--foreground-muted);
 }
+
+.login-verified-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background-color: var(--badge-mint-bg, #E8F5E9);
+  border: 1px solid rgba(45, 106, 79, 0.25);
+  border-radius: var(--radius-md, 12px);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(45, 106, 79, 0.08);
+}
+
+.login-verified-icon {
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.login-verified-content strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green-leaf, #1B4332);
+  margin-bottom: 2px;
+}
+
+.login-verified-content p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--foreground-secondary, #4A4A4A);
+  line-height: 1.4;
+}
