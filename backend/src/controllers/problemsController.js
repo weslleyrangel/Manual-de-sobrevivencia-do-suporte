@@ -112,6 +112,7 @@ exports.acceptSolution = async (req, res) => {
     try {
         const securityContext = getSecurityContext(req);
         const { id: problem_id, solutionId } = req.params;
+        const { desmarcar } = req.body || {};
 
         const useCase = new AceitarSolucaoUseCase({ 
             perguntaRepository, 
@@ -121,13 +122,15 @@ exports.acceptSolution = async (req, res) => {
         const result = await useCase.execute({
             securityContext,
             perguntaId: problem_id,
-            solucaoId: solutionId
+            solucaoId: solutionId === 'unaccept' ? null : solutionId,
+            desmarcar: Boolean(desmarcar || solutionId === 'unaccept')
         });
 
         return res.status(200).json({ 
-            message: 'Solução aceita com sucesso.', 
+            message: (desmarcar || solutionId === 'unaccept') ? 'Solução desmarcada com sucesso.' : 'Solução aceita com sucesso.', 
             acceptedSolutionId: result.solucaoAceitaId,
-            status: result.status 
+            status: result.status,
+            marcadoPorAdmin: result.marcadoPorAdmin
         });
     } catch (error) {
         return handleError(res, error, 'Erro ao aceitar solução');

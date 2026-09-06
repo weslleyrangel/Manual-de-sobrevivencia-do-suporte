@@ -191,6 +191,26 @@
   background-color: var(--badge-mint-bg);
 }
 
+.menu-item-icon-box.box-admin {
+  background: linear-gradient(135deg, #10B981 0%, #047857 100%);
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+}
+
+.admin-menu-card {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  background: linear-gradient(to right, rgba(16, 185, 129, 0.05), var(--surface-primary)) !important;
+}
+
+.menu-admin-badge {
+  background: #10B981;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
 .menu-item-copy {
   flex: 1;
   display: flex;

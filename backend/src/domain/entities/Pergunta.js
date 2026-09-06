@@ -40,6 +40,18 @@ class Pergunta {
     this.solucaoAceitaId = solucaoId;
   }
 
+  desmarcarSolucaoAceita() {
+    this.status = 'ABERTA';
+    this.solucaoAceitaId = null;
+  }
+
+  reabrir() {
+    this.status = 'ABERTA';
+    this.closingReason = null;
+    this.closedAt = null;
+    this.encerradoEm = null;
+  }
+
   encerrarAdministrativamente({ tecnicoId, motivo, justificativaTecnica }) {
     this.status = 'FECHADA_ADMINISTRATIVAMENTE';
     this.closingReason = justificativaTecnica || motivo;
@@ -48,9 +60,7 @@ class Pergunta {
   }
 
   isFechada() {
-    return this.status === 'FECHADA_ADMINISTRATIVAMENTE' || this.status === 'RESOLVIDA'; // Depending on business rules, RESOLVIDA might not mean "fechada para novos comentarios" but we assume FECHADA_ADMINISTRATIVAMENTE does.
-    // Actually, USE_CASES_DDD says "Se estiver FECHADA ou RESOLVIDA, lança PerguntaFechadaError."
-    // So both are considered "fechada" for new solutions.
+    return this.status === 'FECHADA_ADMINISTRATIVAMENTE' || this.status === 'RESOLVIDA';
   }
 }
 

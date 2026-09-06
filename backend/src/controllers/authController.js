@@ -80,6 +80,11 @@ exports.login = async (req, res) => {
 
         const user = result.rows[0];
 
+        // Check if user is blocked
+        if (user.is_blocked) {
+            return res.status(403).json({ error: 'Sua conta foi suspensa ou desativada pelo administrador.' });
+        }
+
         // Check verification
         if (!user.is_verified) {
             return res.status(401).json({ error: 'Conta não verificada. Por favor, verifique seu e-mail.' });
@@ -193,7 +198,10 @@ exports.me = async (req, res) => {
             return res.status(401).json({ error: 'Não autenticado' });
         }
 
-        const result = await db.query('SELECT id, name, email, role, created_at FROM users WHERE id = $1', [req.user.userId]);
+        const result = await db.query(
+            'SELECT id, name, email, role, job_title, is_verified, COALESCE(is_blocked, FALSE) AS is_blocked, created_at FROM users WHERE id = $1',
+            [req.user.userId]
+        );
         if (!result.rows || result.rows.length === 0) {
             return res.status(404).json({ error: 'Usuário não encontrado' });
         }

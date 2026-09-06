@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import { BottomNav } from './BottomNav';
 import { Icon } from '../common/Icons';
 import './AppLayout.css';
 
 export const AppLayout = ({ children, hideBottomNav = false, hideDesktopNav = false }) => {
   const navigate = useNavigate();
+  const { user, isAdmin } = useContext(AuthContext);
+
+  const initials = user?.name
+    ? user.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+    : 'US';
 
   return (
     <div className="app-viewport desktop-layout">
@@ -33,6 +39,14 @@ export const AppLayout = ({ children, hideBottomNav = false, hideDesktopNav = fa
               <NavLink to="/profile" className={({ isActive }) => `desktop-link ${isActive ? 'active' : ''}`}>
                 <Icon name="circle-user-round" size={18} /> Meu Perfil
               </NavLink>
+              {isAdmin && (
+                <NavLink 
+                  to="/admin" 
+                  className={({ isActive }) => `desktop-link admin-desktop-tab ${isActive ? 'active' : ''}`}
+                >
+                  <Icon name="shield-check" size={18} /> Painel Admin
+                </NavLink>
+              )}
             </nav>
 
             <div className="desktop-actions">
@@ -43,7 +57,7 @@ export const AppLayout = ({ children, hideBottomNav = false, hideDesktopNav = fa
                 <Icon name="plus" size={16} color="#FFFFFF" /> Nova Publicação
               </button>
               <Link to="/menu" className="desktop-avatar-btn pressable" title="Menu & Configurações">
-                <span className="avatar-initials">AS</span>
+                <span className="avatar-initials">{initials}</span>
               </Link>
             </div>
           </div>

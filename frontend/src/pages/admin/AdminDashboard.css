@@ -1,0 +1,266 @@
+/* Admin Dashboard Styles */
+.admin-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-page-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.admin-page-desc {
+  font-size: 14px;
+  color: #A3B899;
+  margin-top: 4px;
+}
+
+.admin-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(223, 243, 228, 0.08);
+  border: 1px solid rgba(223, 243, 228, 0.2);
+  color: #DFF3E4;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-refresh-btn:hover {
+  background: rgba(223, 243, 228, 0.16);
+  color: #FFFFFF;
+}
+
+/* Metrics Grid */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.admin-stat-card {
+  background: #14281F;
+  border: 1px solid rgba(223, 243, 228, 0.12);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #EBF875;
+}
+
+.admin-stat-card.blue::before {
+  background: #38BDF8;
+}
+
+.admin-stat-card.emerald::before {
+  background: #10B981;
+}
+
+.admin-stat-card.amber::before {
+  background: #F59E0B;
+}
+
+.admin-stat-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-stat-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #A3B899;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-stat-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-stat-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+.admin-stat-sub {
+  font-size: 12px;
+  color: #8EAA90;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-stat-badge {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  color: #DFF3E4;
+}
+
+/* Two-column Widgets */
+.admin-widgets-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .admin-widgets-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-widget-card {
+  background: #14281F;
+  border: 1px solid rgba(223, 243, 228, 0.12);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-widget-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+/* Category Bars */
+.admin-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-cat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-cat-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: #DFF3E4;
+}
+
+.admin-cat-bar-bg {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.admin-cat-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10B981 0%, #EBF875 100%);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* Pending Problems List */
+.admin-pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-pending-item {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(223, 243, 228, 0.08);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+.admin-pending-item:hover {
+  background: rgba(223, 243, 228, 0.06);
+  border-color: rgba(235, 248, 117, 0.3);
+  transform: translateX(3px);
+}
+
+.admin-pending-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-pending-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.admin-pending-sub {
+  font-size: 12px;
+  color: #8EAA90;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-tag-pill {
+  background: rgba(235, 248, 117, 0.15);
+  color: #EBF875;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.admin-empty-state {
+  text-align: center;
+  padding: 30px 20px;
+  color: #8EAA90;
+  font-size: 14px;
+}
