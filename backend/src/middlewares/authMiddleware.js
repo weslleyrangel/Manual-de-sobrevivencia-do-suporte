@@ -12,8 +12,10 @@ module.exports = (req, res, next) => {
         req.user = decoded; // Maintains backwards compatibility with controllers
 
         // Injeta o securityContext para os Use Cases do DDD
-        const role = decoded.role || 'USUARIO';
-        const normalizedRole = role.startsWith('ROLE_') ? role : `ROLE_${role}`;
+        const Roles = require('../domain/constants/Roles');
+        const role = decoded.role || Roles.MEMBER;
+        // Padronizamos sem o prefixo 'ROLE_' para manter simetria com banco de dados
+        const normalizedRole = role.replace(/^ROLE_/, '');
 
         req.securityContext = {
             userId: String(decoded.userId || decoded.id),

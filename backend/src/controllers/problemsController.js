@@ -7,6 +7,7 @@ const perguntaRepository = require('../infrastructure/database/PerguntaRepositor
 const solucaoRepository = require('../infrastructure/database/SolucaoRepository');
 const { DomainError, UnauthorizedError } = require('../domain/errors/DomainErrors');
 
+const Roles = require('../domain/constants/Roles');
 // Helper para extrair o securityContext de forma estrita
 const getSecurityContext = (req) => {
     if (req.securityContext) return req.securityContext;
@@ -14,7 +15,7 @@ const getSecurityContext = (req) => {
         return {
             userId: req.user.id || req.user.userId,
             isVerified: req.user.is_verified ?? req.user.isVerified ?? true,
-            roles: req.user.role ? [req.user.role] : ['ROLE_USUARIO']
+            roles: req.user.role ? [req.user.role.replace(/^ROLE_/, '')] : [Roles.MEMBER]
         };
     }
     throw new UnauthorizedError('Sessão inválida ou não autenticada.');

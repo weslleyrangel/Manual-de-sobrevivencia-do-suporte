@@ -3,30 +3,28 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const db = require('../config/db');
 const emailService = require('../services/emailService');
+const Usuario = require('../domain/entities/Usuario');
+const Roles = require('../domain/constants/Roles');
+const { DomainError } = require('../domain/errors/DomainErrors');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret-key-for-dev';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-exports.register = async (req, res) => {
+exports.register = async (req, res, next) => {
     try {
         const { name, email, password, level, area, job_title } = req.body;
-        
-        if (!email || !password) {
-            return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
-        }
 
-        const trimmedEmail = email.trim().toLowerCase();
-        if (!EMAIL_REGEX.test(trimmedEmail)) {
-            return res.status(400).json({ error: 'Por favor, informe um endereço de e-mail válido.' });
-        }
+        const computedJobTitle = job_title || (role && level ? `${role} · ${level}` : role || 'Analista de Suporte · Nível 1');
+        const computedRole = (role && (role.toUpperCase().includes(Roles.ADMIN) ? Roles.ADMIN : (role.toUpperCase().includes(Roles.MODERATOR) ? Roles.MODERATOR : Roles.MEMBER))) || Roles.MEMBER;
 
-        if (typeof password !== 'string' || password.length < 6) {
-            return res.status(400).json({ error: 'A senha deve conter no mínimo 6 caracteres.' });
-        }
-
-        const trimmedName = (name && typeof name === 'string' && name.trim().length >= 2) 
-            ? name.trim() 
-            : 'Analista de Suporte';
+        // O Factory Method do Usuario encapsula as validações de Email e SenhaForte
+        const novoUsuario = Usuario.criar({
+            nome: name,
+            email,
+            senhaLimpa: password,
+            role: computedRole,
+            jobTitle: computedJobTitle
+        });
 
         // Check if user exists
         const userExists = await db.query('SELECT id FROM users WHERE email = $1', [trimmedEmail]);
@@ -46,9 +44,7 @@ exports.register = async (req, res) => {
         );
         const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-        // Compute role and title (Privilege Escalation Protection: Public registers are ALWAYS 'MEMBER')
-        const enforcedRole = 'MEMBER';
-        const computedJobTitle = job_title || (level && area ? `Analista de Suporte · ${level}` : 'Analista de Suporte · Nível 1');
+        const computedName = (name && name.trim()) || 'Analista de Suporte';
 
         // Insert user
         const result = await db.query(
@@ -69,18 +65,14 @@ exports.register = async (req, res) => {
             email: user.email
         });
     } catch (error) {
-        if (error.code === '23505') {
-            return res.status(400).json({ error: 'Este e-mail já está cadastrado em nosso sistema.' });
-        }
-        console.error('Register error:', error);
-        return res.status(500).json({ error: 'Erro interno ao cadastrar usuário.' });
+        next(error);
     }
 };
 
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        
+
         if (!email || !password) {
             return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
         }
@@ -97,7 +89,7 @@ exports.login = async (req, res) => {
 
         // Check verification
         if (!user.is_verified) {
-            return res.status(401).json({ 
+            return res.status(401).json({
                 error: 'Conta não verificada. Por favor, verifique seu e-mail.',
                 unverified: true,
                 email: user.email
@@ -112,14 +104,14 @@ exports.login = async (req, res) => {
 
         // Generate token
         const token = jwt.sign(
-            { 
-                userId: user.id, 
-                name: user.name, 
-                email: user.email, 
+            {
+                userId: user.id,
+                name: user.name,
+                email: user.email,
                 role: user.role,
-                isVerified: user.is_verified 
-            }, 
-            JWT_SECRET, 
+                isVerified: user.is_verified
+            },
+            JWT_SECRET,
             { expiresIn: '1d' }
         );
 
@@ -142,12 +134,11 @@ exports.login = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Login error:', error);
-        return res.status(500).json({ error: 'Erro interno ao realizar login.' });
+        next(error);
     }
 };
 
-exports.verifyEmail = async (req, res) => {
+exports.verifyEmail = async (req, res, next) => {
     try {
         const { token } = req.params;
         if (!token) {
@@ -195,9 +186,9 @@ exports.verifyEmail = async (req, res) => {
             );
         }
 
-        return res.status(200).json({ 
+        return res.status(200).json({
             message: 'E-mail verificado com sucesso!',
-            email: user.email 
+            email: user.email
         });
     } catch (error) {
         console.error('Verify error:', error);
@@ -214,7 +205,7 @@ exports.resendVerification = async (req, res) => {
 
         const trimmedEmail = email.trim().toLowerCase();
         const result = await db.query('SELECT * FROM users WHERE email = $1', [trimmedEmail]);
-        
+
         if (result.rows && result.rows.length > 0) {
             const user = result.rows[0];
             if (!user.is_verified) {
@@ -234,8 +225,8 @@ exports.resendVerification = async (req, res) => {
             }
         }
 
-        return res.status(200).json({ 
-            message: 'Se o e-mail estiver cadastrado e não verificado, um novo link de ativação foi enviado.' 
+        return res.status(200).json({
+            message: 'Se o e-mail estiver cadastrado e não verificado, um novo link de ativação foi enviado.'
         });
     } catch (error) {
         console.error('Resend verification error:', error);
@@ -282,7 +273,7 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
     try {
         const { token, password } = req.body;
-        
+
         if (!token || !password) {
             return res.status(400).json({ error: 'Token e nova senha são obrigatórios.' });
         }
@@ -317,12 +308,11 @@ exports.resetPassword = async (req, res) => {
             message: 'Senha redefinida com sucesso! Você já pode realizar login com a nova senha.'
         });
     } catch (error) {
-        console.error('Reset password error:', error);
-        return res.status(500).json({ error: 'Erro ao redefinir senha.' });
+        next(error);
     }
 };
 
-exports.me = async (req, res) => {
+exports.me = async (req, res, next) => {
     try {
         if (!req.user || !req.user.userId) {
             return res.status(401).json({ error: 'Não autenticado' });
@@ -335,7 +325,7 @@ exports.me = async (req, res) => {
 
         return res.status(200).json({ user: result.rows[0] });
     } catch (error) {
-        return res.status(500).json({ error: 'Server error' });
+        next(error);
     }
 };
 

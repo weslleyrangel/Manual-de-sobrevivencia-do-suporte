@@ -1,4 +1,5 @@
 const { ForbiddenError, ValidationError, NotFoundError } = require('../../domain/errors/DomainErrors');
+const Roles = require('../../domain/constants/Roles');
 
 class EncerrarPerguntaAdministrativamenteUseCase {
   constructor({ perguntaRepository, auditLogGateway, eventPublisher }) {
@@ -8,7 +9,7 @@ class EncerrarPerguntaAdministrativamenteUseCase {
   }
 
   async execute({ securityContext, perguntaId, motivo, justificativaTecnica }) {
-    const isTecnicoOuAdmin = securityContext.roles.some(r => ['ROLE_TECNICO', 'ROLE_ADMIN'].includes(r));
+    const isTecnicoOuAdmin = securityContext.roles.some(r => [Roles.TECNICO, Roles.ADMIN].includes(r.replace(/^ROLE_/, '')));
     if (!isTecnicoOuAdmin) {
       throw new ForbiddenError('Acesso negado. Requer permissão de Suporte Técnico ou Admin.');
     }
