@@ -9,6 +9,7 @@ export const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isRateLimited, setIsRateLimited] = useState(false);
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -21,12 +22,19 @@ export const ForgotPassword = () => {
     }
 
     setLoading(true);
+    setIsRateLimited(false);
     try {
       await api.forgotPassword(email.trim());
       setSubmitted(true);
       showToast('Instruções de redefinição enviadas com sucesso!', 'success');
     } catch (err) {
-      showToast(err.message || 'Falha ao solicitar recuperação de senha.', 'error');
+      const errMsg = err.message || 'Falha ao solicitar recuperação de senha.';
+      const lowerErr = errMsg.toLowerCase();
+      if (lowerErr.includes('muitas tentativas') || lowerErr.includes('muitas requisições')) {
+        setIsRateLimited(true);
+      } else {
+        showToast(errMsg, 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -73,6 +81,28 @@ export const ForgotPassword = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="forgot-form">
+            {isRateLimited && (
+              <div className="login-error-msg" style={{ 
+                flexDirection: 'column', 
+                alignItems: 'flex-start', 
+                gap: '8px', 
+                backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+                border: '1px solid var(--color-error-foreground)', 
+                padding: '16px',
+                marginBottom: '16px',
+                borderRadius: '8px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Icon name="ban" size={20} color="var(--color-error-foreground)" />
+                  <strong style={{ color: 'var(--color-error-foreground)' }}>Acesso temporariamente bloqueado</strong>
+                </div>
+                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.4', color: 'var(--color-error-foreground)' }}>
+                  Foram solicitadas muitas recuperações de senha recentemente. 
+                  Aguarde <strong>15 minutos</strong> antes de tentar novamente.
+                </p>
+              </div>
+            )}
+
             <div className="form-group">
               <label className="form-label" htmlFor="forgot-email">E-mail cadastrado</label>
               <div className="form-input-box">
@@ -84,16 +114,18 @@ export const ForgotPassword = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   autoFocus
+                  disabled={isRateLimited}
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || isRateLimited}
               className="forgot-submit-btn pressable"
+              style={isRateLimited ? { backgroundColor: 'var(--foreground-muted)', cursor: 'not-allowed' } : {}}
             >
-              {loading ? 'Enviando instruções...' : 'Enviar link de redefinição'}
+              {loading ? 'Enviando instruções...' : isRateLimited ? 'Bloqueado' : 'Enviar link de redefinição'}
             </button>
 
             <footer className="forgot-footer">

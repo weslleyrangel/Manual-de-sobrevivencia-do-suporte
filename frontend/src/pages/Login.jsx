@@ -18,6 +18,7 @@ export const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [isUnverified, setIsUnverified] = useState(false);
+  const [isRateLimited, setIsRateLimited] = useState(false);
   const [resending, setResending] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -25,6 +26,7 @@ export const Login = () => {
     e.preventDefault();
     setError('');
     setIsUnverified(false);
+    setIsRateLimited(false);
 
     if (!email.trim() || !password.trim()) {
       setError('Por favor, preencha todos os campos obrigatórios.');
@@ -40,8 +42,13 @@ export const Login = () => {
     } catch (err) {
       const errMsg = err.message || 'E-mail ou senha incorretos';
       setError(errMsg);
-      if (errMsg.toLowerCase().includes('não verificada') || errMsg.toLowerCase().includes('verifique seu e-mail')) {
+      
+      const lowerErr = errMsg.toLowerCase();
+      if (lowerErr.includes('não verificada') || lowerErr.includes('verifique seu e-mail')) {
         setIsUnverified(true);
+      }
+      if (lowerErr.includes('muitas tentativas') || lowerErr.includes('muitas requisições')) {
+        setIsRateLimited(true);
       }
     } finally {
       setLoading(false);
@@ -194,6 +201,26 @@ export const Login = () => {
               </div>
             )}
 
+            {isRateLimited && (
+              <div className="login-error-msg" style={{ 
+                flexDirection: 'column', 
+                alignItems: 'flex-start', 
+                gap: '8px', 
+                backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+                border: '1px solid var(--color-error-foreground)', 
+                padding: '16px' 
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Icon name="ban" size={20} color="var(--color-error-foreground)" />
+                  <strong style={{ color: 'var(--color-error-foreground)' }}>Acesso temporariamente bloqueado</strong>
+                </div>
+                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.4', color: 'var(--color-error-foreground)' }}>
+                  Detectamos muitas tentativas recentes originadas deste dispositivo. 
+                  Para a sua segurança, aguarde <strong>15 minutos</strong> antes de tentar novamente.
+                </p>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="login-form">
               <div className="form-group">
                 <label className="form-label" htmlFor="email-input">E-mail de trabalho</label>
@@ -206,6 +233,7 @@ export const Login = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     autoComplete="email"
+                    disabled={isRateLimited}
                   />
                 </div>
               </div>
@@ -221,12 +249,14 @@ export const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete="current-password"
+                    disabled={isRateLimited}
                   />
                   <button
                     type="button"
                     className="input-visibility-toggle"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label="Alternar visibilidade da senha"
+                    disabled={isRateLimited}
                   >
                     <Icon name={showPassword ? 'eye-off' : 'eye'} size={18} color="var(--foreground-muted)" />
                   </button>
@@ -239,6 +269,7 @@ export const Login = () => {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
+                    disabled={isRateLimited}
                   />
                   <span className="remember-me-custom-box" />
                   <span className="remember-me-label">Lembrar de mim</span>
@@ -251,10 +282,11 @@ export const Login = () => {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || isRateLimited}
                 className="login-submit-btn pressable"
+                style={isRateLimited ? { backgroundColor: 'var(--foreground-muted)', cursor: 'not-allowed' } : {}}
               >
-                {loading ? 'Entrando...' : 'Entrar no manual'}
+                {loading ? 'Entrando...' : isRateLimited ? 'Bloqueado temporariamente' : 'Entrar no manual'}
               </button>
             </form>
 
