@@ -44,6 +44,7 @@ export const ProfessionalSetup = () => {
 
       const result = await api.register(payload);
 
+      sessionStorage.removeItem('register_draft');
       showToast('Cadastro realizado! Verifique seu e-mail para ativar a conta.', 'success');
       navigate('/check-email', { state: { email: result?.email || payload.email } });
     } catch (err) {

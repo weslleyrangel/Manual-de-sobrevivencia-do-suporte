@@ -4,6 +4,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { ForgotPassword } from '../pages/ForgotPassword';
 
+import { api } from '../services/api';
+
 describe('ForgotPassword Page', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -26,6 +28,8 @@ describe('ForgotPassword Page', () => {
   });
 
   it('envia link e exibe mensagem de sucesso com instruções', async () => {
+    vi.spyOn(api, 'forgotPassword').mockResolvedValue(true);
+    
     renderForgotPassword();
 
     const emailInput = screen.getByLabelText('E-mail cadastrado');
