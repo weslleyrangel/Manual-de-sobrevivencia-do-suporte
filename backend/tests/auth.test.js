@@ -42,7 +42,7 @@ describe('Auth API Endpoints', () => {
                 .send({
                     name: 'Técnico',
                     email: 'tecnico@suporte.com',
-                    password: 'senha-segura',
+                    password: 'SenhaSegura123',
                     role: 'ADMIN' // Trying to escalate privileges
                 });
             
@@ -55,7 +55,7 @@ describe('Auth API Endpoints', () => {
             expect(insertCallArgs[3]).toBe('MEMBER');
         });
 
-        it('should return 400 if password has less than 6 characters', async () => {
+        it('should return 400 if password does not meet complexity', async () => {
             const res = await request(app)
                 .post('/api/v1/auth/register')
                 .send({
@@ -65,7 +65,7 @@ describe('Auth API Endpoints', () => {
                 });
             
             expect(res.statusCode).toBe(400);
-            expect(res.body).toHaveProperty('error', 'A senha deve conter no mínimo 6 caracteres.');
+            expect(res.body).toHaveProperty('error', 'A senha deve ter no mínimo 8 caracteres.');
         });
 
         it('should return 400 if email is invalid', async () => {
@@ -74,11 +74,11 @@ describe('Auth API Endpoints', () => {
                 .send({
                     name: 'Técnico',
                     email: 'invalid-email-format',
-                    password: 'senha-segura'
+                    password: 'SenhaSegura123'
                 });
             
             expect(res.statusCode).toBe(400);
-            expect(res.body).toHaveProperty('error', 'Por favor, informe um endereço de e-mail válido.');
+            expect(res.body).toHaveProperty('error', 'Formato de e-mail inválido.');
         });
 
         it('should return 400 if email already exists', async () => {
@@ -89,7 +89,7 @@ describe('Auth API Endpoints', () => {
                 .send({
                     name: 'Técnico',
                     email: 'tecnico@suporte.com',
-                    password: 'senha-segura'
+                    password: 'SenhaSegura123'
                 });
             
             expect(res.statusCode).toBe(400);
@@ -107,7 +107,7 @@ describe('Auth API Endpoints', () => {
                 .post('/api/v1/auth/login')
                 .send({
                     email: 'tecnico@suporte.com',
-                    password: 'senha-segura'
+                    password: 'SenhaSegura123'
                 });
             expect(res.statusCode).toBe(200);
             expect(res.body).toHaveProperty('message', 'Login realizado com sucesso');
@@ -123,7 +123,7 @@ describe('Auth API Endpoints', () => {
                 .post('/api/v1/auth/login')
                 .send({
                     email: 'tecnico@suporte.com',
-                    password: 'senha-segura'
+                    password: 'SenhaSegura123'
                 });
             
             expect(res.statusCode).toBe(401);
@@ -188,7 +188,7 @@ describe('Auth API Endpoints', () => {
                 .post('/api/v1/auth/reset-password')
                 .send({
                     token: 'valid_reset_token',
-                    password: 'nova-senha-segura'
+                    password: 'NovaSenha123'
                 });
 
             expect(res.statusCode).toBe(200);
