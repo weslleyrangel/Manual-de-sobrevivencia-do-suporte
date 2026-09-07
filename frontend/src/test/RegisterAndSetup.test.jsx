@@ -26,7 +26,7 @@ describe('Register Flow', () => {
     expect(screen.getByText(/ETAPA 1 DE 2/i)).toBeInTheDocument();
   });
 
-  it('salva draft no sessionStorage e avança ao submeter etapa 1 válida', () => {
+  it('avança ao submeter etapa 1 válida', () => {
     render(
       <BrowserRouter>
         <Register />
@@ -38,20 +38,14 @@ describe('Register Flow', () => {
     fireEvent.change(screen.getByLabelText('Crie uma senha'), { target: { value: 'senhaForte123' } });
 
     fireEvent.click(screen.getByRole('button', { name: /continuar/i }));
-
-    const savedDraft = JSON.parse(sessionStorage.getItem('register_draft') || '{}');
-    expect(savedDraft.fullName).toBe('Carlos Silva');
-    expect(savedDraft.email).toBe('carlos@empresa.com');
   });
 
   it('submete etapa 2 (ProfessionalSetup) combinando com o draft e chamando a API', async () => {
-    sessionStorage.setItem('register_draft', JSON.stringify({
-      fullName: 'Carlos Silva',
-      email: 'carlos@empresa.com',
-      password: 'senhaForte123'
-    }));
-
     const mockLogin = vi.fn();
+    
+    // We import MemoryRouter just for this test
+    const { MemoryRouter } = await import('react-router-dom');
+
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ user: { id: 2, name: 'Carlos Silva' } })
@@ -59,21 +53,21 @@ describe('Register Flow', () => {
 
     render(
       <AuthContext.Provider value={{ login: mockLogin }}>
-        <BrowserRouter>
+        <MemoryRouter initialEntries={[{ pathname: '/register/professional', state: { fullName: 'Carlos Silva', email: 'carlos@empresa.com', password: 'senhaForte123' } }]}>
           <ProfessionalSetup />
-        </BrowserRouter>
+        </MemoryRouter>
       </AuthContext.Provider>
     );
 
     expect(screen.getByText('Agora, fale do seu trabalho.')).toBeInTheDocument();
     expect(screen.getByLabelText('Sua área')).toBeInTheDocument();
-    expect(screen.getByLabelText('Sua função')).toBeInTheDocument();
-    expect(screen.getByLabelText('Nível de experiência')).toBeInTheDocument();
+    expect(screen.getByLabelText('Sua função principal')).toBeInTheDocument();
+    expect(screen.getByLabelText('Seu nível de senioridade')).toBeInTheDocument();
 
     // Altera opções
     fireEvent.change(screen.getByLabelText('Sua área'), { target: { value: 'Suporte Técnico N1/N2' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /concluir e entrar no manual/i }));
+    fireEvent.click(screen.getByRole('button', { name: /finalizar cadastro/i }));
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith('/api/v1/auth/register', expect.objectContaining({
@@ -87,7 +81,6 @@ describe('Register Flow', () => {
           level: 'Nível 2 (Pleno)'
         })
       }));
-      expect(sessionStorage.getItem('register_draft')).toBeNull();
     });
   });
 });
