@@ -12,22 +12,22 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 exports.register = async (req, res, next) => {
     try {
-        const { name, email, password, level, area, job_title } = req.body;
+        const { name, email, password, level, area, job_title, role } = req.body;
 
         const computedJobTitle = job_title || (role && level ? `${role} · ${level}` : role || 'Analista de Suporte · Nível 1');
-        const computedRole = (role && (role.toUpperCase().includes(Roles.ADMIN) ? Roles.ADMIN : (role.toUpperCase().includes(Roles.MODERATOR) ? Roles.MODERATOR : Roles.MEMBER))) || Roles.MEMBER;
+        const enforcedRole = Roles.MEMBER;
 
         // O Factory Method do Usuario encapsula as validações de Email e SenhaForte
         const novoUsuario = Usuario.criar({
             nome: name,
             email,
             senhaLimpa: password,
-            role: computedRole,
+            role: enforcedRole,
             jobTitle: computedJobTitle
         });
 
         // Check if user exists
-        const userExists = await db.query('SELECT id FROM users WHERE email = $1', [trimmedEmail]);
+        const userExists = await db.query('SELECT id FROM users WHERE email = $1', [novoUsuario.email.valor]);
         if (userExists.rows && userExists.rows.length > 0) {
             return res.status(400).json({ error: 'Este e-mail já está cadastrado em nosso sistema.' });
         }
@@ -38,18 +38,16 @@ exports.register = async (req, res, next) => {
 
         // Generate verification token (signed JWT, expires in 24h)
         const verificationToken = jwt.sign(
-            { email: trimmedEmail, type: 'EMAIL_VERIFY' },
+            { email: novoUsuario.email.valor, type: 'EMAIL_VERIFY' },
             JWT_SECRET,
             { expiresIn: '24h' }
         );
         const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-        const computedName = (name && name.trim()) || 'Analista de Suporte';
-
         // Insert user
         const result = await db.query(
             'INSERT INTO users (name, email, password_hash, role, job_title, is_verified, verification_token, token_expires_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, name, email, role, job_title, is_verified',
-            [trimmedName, trimmedEmail, passwordHash, enforcedRole, computedJobTitle, false, verificationToken, tokenExpiresAt]
+            [novoUsuario.nome, novoUsuario.email.valor, passwordHash, novoUsuario.role, novoUsuario.jobTitle, false, verificationToken, tokenExpiresAt]
         );
         const user = result.rows[0];
 
@@ -87,6 +85,12 @@ exports.login = async (req, res, next) => {
 
         const user = result.rows[0];
 
+        // Check password
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Credenciais inválidas' });
+        }
+
         // Check if user is blocked
         if (user.is_blocked) {
             return res.status(403).json({ error: 'Sua conta foi suspensa ou desativada pelo administrador.' });
@@ -99,12 +103,6 @@ exports.login = async (req, res, next) => {
                 unverified: true,
                 email: user.email
             });
-        }
-
-        // Check password
-        const isMatch = await bcrypt.compare(password, user.password_hash);
-        if (!isMatch) {
-            return res.status(401).json({ error: 'Credenciais inválidas' });
         }
 
         // Generate token
