@@ -12,6 +12,7 @@ yarn-error.log*
 # Builds e arquivos gerados (Frontend / Vite)
 frontend/dist/
 frontend/dist-ssr/
+frontend/dev-dist/
 frontend/*.local
 dist/
 

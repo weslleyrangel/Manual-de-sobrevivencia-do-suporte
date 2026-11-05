@@ -261,6 +261,19 @@ export const PublicationDetail = () => {
     }
   };
 
+  const handleDeleteProblem = async () => {
+    const confirmMsg = `Tem certeza de que deseja apagar permanentemente este caso?\n"${publication?.title}"`;
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      await api.deleteProblem(publication?.id || id);
+      showToast('Caso apagado com sucesso.', 'success');
+      navigate(-1);
+    } catch (err) {
+      showToast(err.message || 'Erro ao apagar caso.', 'error');
+    }
+  };
+
   if (loading) {
     return (
       <AppLayout>
@@ -608,6 +621,20 @@ export const PublicationDetail = () => {
                     >
                       <Icon name="shield-check" size={17} color="#DC2626" />
                       <span>Encerrar Pergunta (Admin/Técnico)</span>
+                    </button>
+                  )}
+
+                  {/* ADMIN: Apagar Caso */}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      className="action-pill-btn pressable"
+                      style={{ color: '#EF4444', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                      onClick={handleDeleteProblem}
+                      title="Apagar este caso do sistema"
+                    >
+                      <Icon name="trash-2" size={17} color="#EF4444" />
+                      <span>Apagar Caso (Admin)</span>
                     </button>
                   )}
                 </div>

@@ -5,8 +5,11 @@ export const AuthContext = createContext({
     isAuthenticated: false,
     isVerified: true,
     isTechnician: false,
+    isAdmin: false,
+    isGuest: false,
     loading: false,
     login: () => {},
+    guestLogin: () => {},
     logout: () => {},
     isAuthor: () => false
 });
@@ -60,6 +63,23 @@ export const AuthProvider = ({ children }) => {
         setUser(userData);
     };
 
+    const guestLogin = async () => {
+        try {
+            const res = await fetch('/api/v1/auth/guest', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setIsAuthenticated(true);
+                setUser(data.user);
+                return data.user;
+            }
+        } catch (e) {
+            console.error('Erro no guestLogin', e);
+        }
+    };
+
     const logout = async () => {
         try {
             await fetch('/api/v1/auth/logout', {
@@ -87,6 +107,7 @@ export const AuthProvider = ({ children }) => {
         user?.role === 'ADMIN' || 
         user?.role?.toUpperCase()?.includes('ADMIN')
     );
+    const isGuest = Boolean(user?.role === 'GUEST' || user?.role === 'ROLE_GUEST');
     const isAuthor = (authorId) => {
         if (!user || authorId === undefined || authorId === null) return false;
         return String(user.id) === String(authorId);
@@ -97,11 +118,13 @@ export const AuthProvider = ({ children }) => {
             isAuthenticated, 
             user, 
             login, 
+            guestLogin,
             logout, 
             loading,
             isVerified,
             isTechnician,
             isAdmin,
+            isGuest,
             isAuthor
         }}>
             {children}

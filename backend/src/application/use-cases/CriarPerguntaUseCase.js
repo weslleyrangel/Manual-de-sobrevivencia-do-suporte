@@ -7,7 +7,7 @@ class CriarPerguntaUseCase {
     this.eventPublisher = eventPublisher;
   }
 
-  async execute({ securityContext, titulo, descricao, tags, categoriaId }) {
+  async execute({ securityContext, titulo, descricao, tags, categoriaId, companyId, sectorId }) {
     if (!securityContext.isVerified) {
       throw new UnauthorizedError('E-mail não verificado. Confirme seu e-mail para publicar.');
     }
@@ -17,6 +17,8 @@ class CriarPerguntaUseCase {
       descricao,
       tags,
       categoriaId,
+      companyId,
+      sectorId,
       authorId: securityContext.userId
     });
 

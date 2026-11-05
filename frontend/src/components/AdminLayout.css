@@ -104,7 +104,7 @@
   background-color: var(--accent-primary);
   color: var(--foreground-inverse);
   border-color: var(--accent-primary);
-  box-shadow: 0 4px 12px rgba(46, 160, 67, 0.25);
+  box-shadow: 0 4px 12px rgba(230, 57, 70, 0.25);
   font-weight: 700;
 }
 

@@ -1,5 +1,5 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useEffect, useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { AppLayout } from '../components/layout/AppLayout';
@@ -7,268 +7,307 @@ import { Icon } from '../components/common/Icons';
 import { api } from '../services/api';
 import './Home.css';
 
+const SEARCH_DEBOUNCE_MS = 250;
+const MIN_SEARCH_LENGTH = 2;
+
 export const Home = () => {
-  const { user, isAdmin } = useContext(AuthContext);
-  const { showToast } = useToast();
   const navigate = useNavigate();
+  const { isAdmin, isGuest } = useContext(AuthContext);
+  const { showToast } = useToast();
 
-  const [articles, setArticles] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const userName = user?.name ? user.name.split(' ')[0] : 'Usuário';
+  // Busca global
+  const [query, setQuery] = useState('');
+  const [searchResults, setSearchResults] = useState(null);
+  const [searching, setSearching] = useState(false);
 
-  // Current time greeting
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return 'Bom dia';
-    if (hour >= 12 && hour < 18) return 'Boa tarde';
-    return 'Boa noite';
+  // Modal para criar nova empresa (Admin)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newCompanyName, setNewCompanyName] = useState('');
+  const [creating, setCreating] = useState(false);
+
+  const loadCompanies = () => {
+    setLoading(true);
+    api.getCompanies()
+      .then((data) => {
+        setCompanies(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error('Erro ao carregar empresas', err);
+        setError('Não foi possível carregar a lista de empresas.');
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    let isMounted = true;
-    api.getProblems({ limit: 4 })
-      .then((data) => {
-        if (isMounted && data && data.length > 0) {
-          setArticles(data);
-        }
-      })
-      .catch((e) => console.error('Erro ao carregar artigos da Home', e))
-      .finally(() => {
-        if (isMounted) setLoading(false);
-      });
-
-    return () => { isMounted = false; };
+    loadCompanies();
   }, []);
+
+  // Busca instantânea
+  useEffect(() => {
+    const term = query.trim();
+    if (term.length < MIN_SEARCH_LENGTH) {
+      setSearchResults(null);
+      setSearching(false);
+      return undefined;
+    }
+
+    let ignore = false;
+    setSearching(true);
+    const timer = setTimeout(() => {
+      api.search(term)
+        .then((data) => {
+          if (!ignore) setSearchResults(Array.isArray(data) ? data : []);
+        })
+        .catch(() => {
+          if (!ignore) setSearchResults([]);
+        })
+        .finally(() => {
+          if (!ignore) setSearching(false);
+        });
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      ignore = true;
+      clearTimeout(timer);
+    };
+  }, [query]);
+
+  const handleCreateCompany = async (e) => {
+    e.preventDefault();
+    if (!newCompanyName.trim()) {
+      showToast('Por favor, informe o nome da empresa.', 'error');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const created = await api.createCompany(newCompanyName.trim());
+      showToast(`Empresa "${created.name}" criada com sucesso!`, 'success');
+      setNewCompanyName('');
+      setIsModalOpen(false);
+      loadCompanies();
+    } catch (err) {
+      showToast(err.message || 'Erro ao criar empresa.', 'error');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const isSearchActive = searchResults !== null;
 
   return (
     <AppLayout>
       <div className="home-screen-wrapper">
-        {/* Mobile Header */}
-        <header className="home-mobile-header">
-          <div className="home-brand">
-            <div className="home-brand-icon" />
-            <span className="home-brand-name">Manual do Suporte</span>
-          </div>
-          <button
-            type="button"
-            className="home-notification-btn pressable"
-            onClick={() => showToast('Nenhuma notificação nova no momento.', 'info')}
-            aria-label="Notificações"
-          >
-            <Icon name="bell" size={18} color="var(--ink)" />
-          </button>
-        </header>
-
-        {/* Content Section */}
         <div className="home-content">
-          {/* Admin Banner (Exclusivo Administrador) */}
-          {isAdmin && (
-            <div 
-              className="home-admin-banner pressable"
-              onClick={() => navigate('/admin')}
-              role="button"
-              tabIndex={0}
-            >
-              <div className="home-admin-banner-left">
-                <div className="home-admin-banner-icon">
-                  <Icon name="shield-check" size={22} color="#FFFFFF" />
-                </div>
-                <div>
-                  <div className="home-admin-banner-title">
-                    Modo Administrador Ativo <span className="home-admin-badge">ADMIN</span>
-                  </div>
-                  <div className="home-admin-banner-desc">
-                    Acesse o console para visualizar métricas, gerenciar usuários e moderar publicações.
-                  </div>
-                </div>
+          {/* Campo de Busca Superior */}
+          <div className="home-search-bar">
+            <Icon name="search" size={20} color="var(--green-leaf)" />
+            <input
+              type="search"
+              className="home-search-input"
+              placeholder="Pesquisar por caso, solução, comando ou erro..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label="Pesquisar casos"
+              autoFocus
+            />
+            {query.trim().length > 0 && (
+              <button
+                type="button"
+                className="home-search-clear-btn"
+                onClick={() => setQuery('')}
+                aria-label="Limpar busca"
+              >
+                <Icon name="x" size={16} />
+              </button>
+            )}
+            {searching && <span className="home-search-hint">Buscando...</span>}
+          </div>
+
+          {/* MODO 1: Resultados diretos da pesquisa quando houver termo digitado */}
+          {isSearchActive && (
+            <section className="home-search-results-section">
+              <div className="home-results-header">
+                <h2 className="home-results-title">
+                  Resultados para "{query.trim()}"
+                </h2>
+                <span className="home-results-count">
+                  {searchResults.length} {searchResults.length === 1 ? 'resultado' : 'resultados'}
+                </span>
               </div>
-              <div className="home-admin-banner-btn">
-                <span>Console Admin</span>
-                <Icon name="chevron-right" size={16} />
+
+              {searchResults.length === 0 ? (
+                <p className="home-status">
+                  Nenhum caso encontrado para "{query.trim()}". Tente outros termos.
+                </p>
+              ) : (
+                <div className="home-search-results-list">
+                  {searchResults.map((item) => (
+                    <Link
+                      key={item.id}
+                      to={`/publication/${item.id}`}
+                      className="home-search-result-card pressable"
+                    >
+                      <div className="home-result-left">
+                        <span className="home-result-category">
+                          {item.category || 'GERAL'}
+                        </span>
+                        <h3 className="home-result-title">{item.title}</h3>
+                        {item.snippet && (
+                          <p className="home-result-snippet">{item.snippet}</p>
+                        )}
+                      </div>
+                      <Icon name="chevron-right" size={20} color="var(--green-leaf)" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* MODO 2: Grid de Empresas */}
+          {!isSearchActive && (
+            <section className="home-companies-section">
+              <div className="home-section-header">
+                <div>
+                  <h1 className="home-section-title">Empresas</h1>
+                  <p className="home-section-subtitle">
+                    Selecione uma empresa para acessar as categorias e casos de suporte.
+                  </p>
+                </div>
+
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(true)}
+                    className="home-add-company-btn pressable"
+                  >
+                    <Icon name="plus" size={16} color="#FFFFFF" />
+                    <span>Nova Empresa</span>
+                  </button>
+                )}
+              </div>
+
+              {loading && <p className="home-status">Carregando empresas...</p>}
+              {error && !loading && <p className="home-status home-status-error">{error}</p>}
+
+              {!loading && !error && (
+                <div className="company-cards-grid">
+                  {companies.map((comp) => (
+                    <div
+                      key={comp.id}
+                      className="company-card pressable"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => navigate(`/company/${comp.id}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          navigate(`/company/${comp.id}`);
+                        }
+                      }}
+                    >
+                      <div className="company-card-top">
+                        <div className="company-icon-box">
+                          <Icon name="briefcase-business" size={24} color="var(--accent-primary)" />
+                        </div>
+                        <div className="company-arrow-box">
+                          <Icon name="chevron-right" size={18} color="var(--foreground-muted)" />
+                        </div>
+                      </div>
+
+                      <div className="company-card-info">
+                        <h2 className="company-card-name">{comp.name}</h2>
+                        <div className="company-card-badges">
+                          <span className="company-badge-item">
+                            {comp.problems_count || 0} {(comp.problems_count === 1) ? 'caso' : 'casos'}
+                          </span>
+                          <span className="company-badge-separator">•</span>
+                          <span className="company-badge-item">
+                            {comp.categories_count || 0} categorias
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Card Atalho para criar empresa (apenas Admin) */}
+                  {isAdmin && (
+                    <div
+                      className="company-card company-card-add pressable"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setIsModalOpen(true)}
+                    >
+                      <div className="company-add-icon-circle">
+                        <Icon name="plus" size={24} color="var(--accent-primary)" />
+                      </div>
+                      <span className="company-add-label">Cadastrar Nova Empresa</span>
+                      <span className="company-add-desc">Adicione uma nova base técnica</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Modal Criar Empresa */}
+          {isModalOpen && (
+            <div className="home-modal-overlay" onClick={() => setIsModalOpen(false)}>
+              <div className="home-modal-card animate-fade" onClick={(e) => e.stopPropagation()}>
+                <div className="home-modal-header">
+                  <h3 className="home-modal-title">Cadastrar Empresa</h3>
+                  <button
+                    type="button"
+                    className="home-modal-close-btn"
+                    onClick={() => setIsModalOpen(false)}
+                    aria-label="Fechar"
+                  >
+                    <Icon name="x" size={18} />
+                  </button>
+                </div>
+
+                <form onSubmit={handleCreateCompany} className="home-modal-form">
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="company-name-input">
+                      Nome da Empresa
+                    </label>
+                    <input
+                      id="company-name-input"
+                      type="text"
+                      className="home-modal-input"
+                      placeholder="Ex: MEJC, Filial Norte, Matriz..."
+                      value={newCompanyName}
+                      onChange={(e) => setNewCompanyName(e.target.value)}
+                      autoFocus
+                      disabled={creating}
+                    />
+                  </div>
+
+                  <div className="home-modal-actions">
+                    <button
+                      type="button"
+                      className="home-modal-cancel-btn pressable"
+                      onClick={() => setIsModalOpen(false)}
+                      disabled={creating}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="home-modal-submit-btn pressable"
+                      disabled={creating || !newCompanyName.trim()}
+                    >
+                      {creating ? 'Cadastrando...' : 'Salvar Empresa'}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}
-
-          {/* Hero Banner Desktop */}
-          <section className="home-hero-banner">
-            <div className="home-intro">
-              <span className="home-eyebrow">PORTAL DO AGENTE · BASE DE CONHECIMENTO</span>
-              <h1 className="home-greeting">{getGreeting()}, {userName}!</h1>
-              <p className="home-prompt">Com o que podemos ajudar no seu turno de hoje?</p>
-            </div>
-
-            {/* Spotlight Search Bar */}
-            <div
-              className="home-search-bar pressable"
-              onClick={() => navigate('/search')}
-              role="button"
-              tabIndex={0}
-            >
-              <Icon name="search" size={20} color="var(--green-leaf)" />
-              <span className="home-search-placeholder">Pesquisar soluções, erros, scripts e procedimentos...</span>
-              <span className="search-shortcut-badge">Buscar</span>
-            </div>
-          </section>
-
-          {/* Desktop 2-Column Split */}
-          <div className="home-main-grid">
-            {/* Left Column (Primary Content) */}
-            <div className="home-left-col">
-              {/* Quick Access */}
-              <section className="quick-access-section">
-                <div className="section-header">
-                  <h2 className="section-title">Acesso rápido</h2>
-                  <Link to="/search" className="section-link">VER TODOS OS TEMAS</Link>
-                </div>
-
-                <div className="quick-access-grid">
-                  <Link to="/search?category=Primeiros+passos" className="quick-card card-yellow pressable">
-                    <div className="quick-icon-box">
-                      <Icon name="map" size={20} color="var(--green-leaf)" />
-                    </div>
-                    <div className="quick-card-text">
-                      <h3 className="quick-card-title">Primeiros passos</h3>
-                      <span className="quick-card-caption">Guia essencial de integração</span>
-                    </div>
-                  </Link>
-
-                  <Link to="/search?category=Scripts+prontos" className="quick-card card-mint pressable">
-                    <div className="quick-icon-box">
-                      <Icon name="message-square-text" size={20} color="var(--green-leaf)" />
-                    </div>
-                    <div className="quick-card-text">
-                      <h3 className="quick-card-title">Scripts prontos</h3>
-                      <span className="quick-card-caption">Respostas rápidas e empáticas</span>
-                    </div>
-                  </Link>
-
-                  <Link to="/search?category=Ferramentas" className="quick-card card-cream pressable">
-                    <div className="quick-icon-box">
-                      <Icon name="sliders-horizontal" size={20} color="var(--green-leaf)" />
-                    </div>
-                    <div className="quick-card-text">
-                      <h3 className="quick-card-title">Ferramentas & SSO</h3>
-                      <span className="quick-card-caption">Resolução de acessos e logins</span>
-                    </div>
-                  </Link>
-
-                  <Link to="/search?category=Processos" className="quick-card card-white pressable">
-                    <div className="quick-icon-box">
-                      <Icon name="notebook-tabs" size={20} color="var(--green-leaf)" />
-                    </div>
-                    <div className="quick-card-text">
-                      <h3 className="quick-card-title">Rotinas e Filas</h3>
-                      <span className="quick-card-caption">Checklists e prioridades</span>
-                    </div>
-                  </Link>
-                </div>
-              </section>
-
-              {/* Continue Reading / Recent Articles */}
-              <section className="recent-section">
-                <div className="section-header">
-                  <h2 className="section-title">Mais acessados e recentes</h2>
-                </div>
-
-                <div className="recent-articles-list">
-                  {articles.length > 0 ? (
-                    articles.map((art) => (
-                      <Link key={art.id} to={`/publication/${art.id}`} className="recent-article-card pressable">
-                        <div className="recent-article-icon-box">
-                          <Icon name="headphones" size={20} color="var(--ink)" />
-                        </div>
-                        <div className="recent-article-copy">
-                          <div className="article-badge-row">
-                            <span className="badge-category">{art.category?.toUpperCase() || 'SUPORTE'}</span>
-                            <span className="badge-resolved">{art.status || 'RESOLVIDO'}</span>
-                          </div>
-                          <h3 className="recent-article-title">{art.title}</h3>
-                          <span className="recent-article-meta">
-                            Por {art.author_name || 'Especialista'} · {art.views_count || 0} visualizações
-                          </span>
-                        </div>
-                        <Icon name="chevron-right" size={20} color="var(--green-leaf)" />
-                      </Link>
-                    ))
-                  ) : (
-                    <>
-                      <Link to="/publication/1" className="recent-article-card pressable">
-                        <div className="recent-article-icon-box">
-                          <Icon name="headphones" size={20} color="var(--ink)" />
-                        </div>
-                        <div className="recent-article-copy">
-                          <div className="article-badge-row">
-                            <span className="badge-category">ATENDIMENTO</span>
-                            <span className="badge-resolved">RESOLVIDO</span>
-                          </div>
-                          <h3 className="recent-article-title">Como desescalonar chamados críticos e lidar com clientes irritados</h3>
-                          <span className="recent-article-meta">Por Especialista · 1.2k visualizações</span>
-                        </div>
-                        <Icon name="chevron-right" size={20} color="var(--green-leaf)" />
-                      </Link>
-
-                      <Link to="/publication/2" className="recent-article-card pressable">
-                        <div className="recent-article-icon-box box-mint">
-                          <Icon name="message-circle-heart" size={20} color="var(--green-leaf)" />
-                        </div>
-                        <div className="recent-article-copy">
-                          <div className="article-badge-row">
-                            <span className="badge-category">FERRAMENTAS</span>
-                            <span className="badge-resolved">RESOLVIDO</span>
-                          </div>
-                          <h3 className="recent-article-title">Guia de troubleshooting para falha no login / SSO corporativo</h3>
-                          <span className="recent-article-meta">Por Especialista · 890 visualizações</span>
-                        </div>
-                        <Icon name="chevron-right" size={20} color="var(--green-leaf)" />
-                      </Link>
-                    </>
-                  )}
-                </div>
-              </section>
-            </div>
-
-            {/* Right Column (Sidebar Widgets) */}
-            <aside className="home-right-col">
-              {/* Daily Tip Card */}
-              <section className="daily-tip-card">
-                <div className="daily-tip-header">
-                  <div className="daily-tip-icon-box">
-                    <Icon name="lightbulb" size={22} color="var(--ink)" />
-                  </div>
-                  <span className="daily-tip-label">DICA DE SOBREVIVÊNCIA</span>
-                </div>
-                <h2 className="daily-tip-text">Comece o turno conferindo os alertas prioritários na fila de atendimento.</h2>
-                <p className="daily-tip-desc">
-                  Identificar chamados reabertos logo no início evita estouro de SLA e melhora o índice de satisfação (CSAT).
-                </p>
-              </section>
-
-              {/* Quick Actions Panel */}
-              <section className="home-actions-panel">
-                <h3 className="panel-title">Ações do Agente</h3>
-                <div className="actions-panel-list">
-                  <button
-                    type="button"
-                    onClick={() => navigate('/new-publication')}
-                    className="panel-action-btn pressable"
-                  >
-                    <Icon name="plus" size={18} color="var(--green-leaf)" />
-                    <span>Compartilhar uma nova solução</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => navigate('/my-publications')}
-                    className="panel-action-btn pressable"
-                  >
-                    <Icon name="notebook-tabs" size={18} color="var(--green-leaf)" />
-                    <span>Gerenciar meus tutoriais ({articles.length > 0 ? '20' : '12'})</span>
-                  </button>
-                </div>
-              </section>
-            </aside>
-          </div>
         </div>
       </div>
     </AppLayout>

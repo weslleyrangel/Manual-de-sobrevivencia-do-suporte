@@ -1,10 +1,11 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Home } from '../pages/Home';
 import { Menu } from '../pages/Menu';
+import { api } from '../services/api';
 
 describe('Home and Menu Pages', () => {
   beforeEach(() => {
@@ -13,22 +14,53 @@ describe('Home and Menu Pages', () => {
     document.documentElement.removeAttribute('data-theme');
   });
 
-  it('Home exibe saudação contextual com o primeiro nome do usuário', () => {
-    const mockUser = { name: 'Mariana Ferreira Silva', role: 'Analista Pleno' };
+  it('Home exibe os cards das empresas e botão de nova empresa para Admin', async () => {
+    vi.spyOn(api, 'getCompanies').mockResolvedValue([
+      { id: 1, name: 'MEJC', problems_count: 33, categories_count: 8, sectors_count: 4 }
+    ]);
 
     render(
-      <AuthContext.Provider value={{ user: mockUser }}>
+      <AuthContext.Provider value={{ user: { name: 'Weslley Rangel', role: 'ADMIN' }, isAdmin: true }}>
         <BrowserRouter>
           <Home />
         </BrowserRouter>
       </AuthContext.Provider>
     );
 
-    expect(screen.getByText(/Mariana!/i)).toBeInTheDocument();
-    expect(screen.getByText('DICA DE SOBREVIVÊNCIA')).toBeInTheDocument();
-    expect(screen.getByText('Acesso rápido')).toBeInTheDocument();
-    expect(screen.getByText('Primeiros passos')).toBeInTheDocument();
-    expect(screen.getByText('Scripts prontos')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'MEJC' })).toBeInTheDocument();
+    expect(screen.getByText(/33 casos/i)).toBeInTheDocument();
+    expect(screen.getByText(/8 categorias/i)).toBeInTheDocument();
+
+    // Botão de cadastrar empresa exclusivo para Admin
+    expect(screen.getByRole('button', { name: /^Nova Empresa$/i })).toBeInTheDocument();
+
+    // Ações principais do topo
+    expect(screen.getByLabelText('Pesquisar casos')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Meu Perfil/i })).toHaveAttribute('href', '/profile');
+  });
+
+  it('Home exibe resultados diretos ao pesquisar por termo', async () => {
+    vi.spyOn(api, 'getCompanies').mockResolvedValue([
+      { id: 1, name: 'MEJC', problems_count: 33, categories_count: 8 }
+    ]);
+    const searchSpy = vi.spyOn(api, 'search').mockResolvedValue([
+      { id: 2, title: 'VPN com MFA', category: 'Redes', snippet: 'Configuração Wireguard' },
+    ]);
+
+    render(
+      <AuthContext.Provider value={{ user: null }}>
+        <BrowserRouter>
+          <Home />
+        </BrowserRouter>
+      </AuthContext.Provider>
+    );
+
+    await screen.findByRole('heading', { name: 'MEJC' });
+    fireEvent.change(screen.getByLabelText('Pesquisar casos'), { target: { value: 'vpn' } });
+
+    await waitFor(() => expect(searchSpy).toHaveBeenCalledWith('vpn'));
+    expect(await screen.findByText('VPN com MFA')).toBeInTheDocument();
+    expect(screen.getByText('Configuração Wireguard')).toBeInTheDocument();
   });
 
   it('Menu exibe perfil do usuário e permite alternar o tema Dark Mode', () => {

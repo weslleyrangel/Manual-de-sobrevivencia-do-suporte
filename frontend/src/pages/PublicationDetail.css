@@ -184,7 +184,7 @@
 .pubdetail-attachment-banner {
   width: 100%;
   height: 140px;
-  background: linear-gradient(135deg, var(--green-deep) 0%, #165b30 100%);
+  background: linear-gradient(135deg, var(--accent-primary, #E63946) 0%, var(--brand-darkred, #C5222F) 100%);
   border-radius: 18px;
   padding: 16px;
   display: flex;

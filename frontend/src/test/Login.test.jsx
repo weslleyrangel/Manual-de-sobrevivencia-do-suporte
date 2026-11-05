@@ -93,4 +93,26 @@ describe('Login Page', () => {
       expect(screen.getByText('E-mail ou senha incorretos')).toBeInTheDocument();
     });
   });
+
+  it('permite acessar como convidado através do botão dedicado', async () => {
+    const mockLogin = vi.fn();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ user: { id: 999, name: 'Convidado', role: 'GUEST' } })
+    });
+
+    renderLogin(mockLogin);
+
+    const guestBtn = screen.getByRole('button', { name: /acessar como convidado/i });
+    expect(guestBtn).toBeInTheDocument();
+
+    fireEvent.click(guestBtn);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('/api/v1/auth/guest', expect.objectContaining({
+        method: 'POST'
+      }));
+      expect(mockLogin).toHaveBeenCalledWith(expect.objectContaining({ role: 'GUEST' }));
+    });
+  });
 });

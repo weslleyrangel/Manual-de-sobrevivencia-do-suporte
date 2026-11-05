@@ -90,7 +90,7 @@ export const NewPublication = () => {
   };
 
   return (
-    <AppLayout hideBottomNav>
+    <AppLayout>
       <div className="newpub-screen-wrapper">
         {/* Mobile Header */}
         <header className="newpub-header">

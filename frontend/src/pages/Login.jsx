@@ -21,6 +21,22 @@ export const Login = () => {
   const [isRateLimited, setIsRateLimited] = useState(false);
   const [resending, setResending] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
+
+  const handleGuestLogin = async () => {
+    setGuestLoading(true);
+    setError('');
+    try {
+      const data = await api.guestLogin();
+      if (auth?.login) auth.login(data?.user);
+      showToast('Acesso como Convidado concedido! Modo de visualização ativo.', 'info');
+      navigate('/');
+    } catch (err) {
+      setError(err.message || 'Erro ao acessar como convidado.');
+    } finally {
+      setGuestLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -289,6 +305,20 @@ export const Login = () => {
                 {loading ? 'Entrando...' : isRateLimited ? 'Bloqueado temporariamente' : 'Entrar no manual'}
               </button>
             </form>
+
+            <div className="login-divider">
+              <span>ou</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGuestLogin}
+              disabled={guestLoading}
+              className="login-guest-btn pressable"
+            >
+              <Icon name="circle-user-round" size={20} color="var(--ink)" />
+              <span>{guestLoading ? 'Acessando como convidado...' : 'Acessar como Convidado'}</span>
+            </button>
 
 
 

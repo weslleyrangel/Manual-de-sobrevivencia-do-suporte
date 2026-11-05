@@ -10,6 +10,8 @@ const ProfessionalSetup = React.lazy(() => import('./pages/ProfessionalSetup').t
 const CheckEmail = React.lazy(() => import('./pages/CheckEmail').then(m => ({ default: m.CheckEmail })));
 const VerifyEmail = React.lazy(() => import('./pages/VerifyEmail').then(m => ({ default: m.VerifyEmail })));
 const Home = React.lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
+const CompanyDetail = React.lazy(() => import('./pages/CompanyDetail').then(m => ({ default: m.CompanyDetail })));
+const CategoryDetail = React.lazy(() => import('./pages/CategoryDetail').then(m => ({ default: m.CategoryDetail })));
 const Search = React.lazy(() => import('./pages/Search').then(m => ({ default: m.Search })));
 const Profile = React.lazy(() => import('./pages/Profile').then(m => ({ default: m.Profile })));
 const MyPublications = React.lazy(() => import('./pages/MyPublications').then(m => ({ default: m.MyPublications })));
@@ -56,6 +58,9 @@ function App() {
 
         {/* Application Core Routes */}
         <Route path="/" element={<Home />} />
+        <Route path="/company/:companyId" element={<CompanyDetail />} />
+        <Route path="/company/:companyId/category/:categoryName" element={<CategoryDetail />} />
+        <Route path="/category/:categoryName" element={<CategoryDetail />} />
         <Route path="/search" element={<Search />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/my-publications" element={<MyPublications />} />

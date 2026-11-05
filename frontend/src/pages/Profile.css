@@ -268,3 +268,23 @@
   color: var(--foreground-secondary);
   line-height: 1.4;
 }
+
+.profile-logout-card {
+  width: 100%;
+  text-align: left;
+  border-color: rgba(239, 68, 68, 0.25);
+  cursor: pointer;
+}
+
+.profile-logout-card:hover {
+  background-color: rgba(239, 68, 68, 0.08);
+  border-color: #EF4444;
+}
+
+.logout-icon-box {
+  background-color: rgba(239, 68, 68, 0.12);
+}
+
+.text-danger {
+  color: #EF4444 !important;
+}

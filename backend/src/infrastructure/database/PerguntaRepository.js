@@ -3,9 +3,12 @@ const Pergunta = require('../../domain/entities/Pergunta');
 
 class PerguntaRepository {
   async save(pergunta) {
+    const companyId = pergunta.companyId ? parseInt(pergunta.companyId) : 1;
+    const sectorId = pergunta.sectorId ? parseInt(pergunta.sectorId) : null;
+
     const result = await db.query(
-      'INSERT INTO problems (title, description, author_id, status, category) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at',
-      [pergunta.titulo, pergunta.descricao, pergunta.authorId, pergunta.status, pergunta.categoriaId || 'Atendimento']
+      'INSERT INTO problems (title, description, author_id, status, category, company_id, sector_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, created_at',
+      [pergunta.titulo, pergunta.descricao, pergunta.authorId, pergunta.status, pergunta.categoriaId || 'Atendimento', companyId, sectorId]
     );
     pergunta.id = result.rows[0].id.toString();
     pergunta.dataCriacao = result.rows[0].created_at;

@@ -39,9 +39,9 @@
 }
 
 .toast-item.toast-success {
-  background-color: var(--green-mint);
-  border-color: rgba(36, 122, 61, 0.3);
-  color: var(--green-deep);
+  background-color: #DEF7EC;
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #03543F;
 }
 
 .toast-item.toast-error {

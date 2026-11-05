@@ -8,14 +8,14 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
-        enabled: true
+        enabled: false
       },
       manifest: {
         name: 'Manual de Sobrevivência do Suporte',
         short_name: 'Manual IT',
         description: 'Base de conhecimento rápida e offline-first para técnicos de TI.',
-        theme_color: '#247A3D',
-        background_color: '#FBFAF3',
+        theme_color: '#E63946',
+        background_color: '#F4F4F5',
         display: 'standalone',
         icons: [
           {
@@ -36,6 +36,10 @@ export default defineConfig({
     host: true,
     port: 5173,
     allowedHosts: true,
+    watch: {
+      usePolling: true,
+      interval: 100
+    },
     proxy: {
       '/api': {
         target: 'http://backend:3000',

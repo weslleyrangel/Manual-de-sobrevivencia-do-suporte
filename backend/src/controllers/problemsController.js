@@ -44,7 +44,7 @@ exports.getProblem = async (req, res, next) => {
 exports.createProblem = async (req, res, next) => {
     try {
         const securityContext = req.securityContext;
-        const { title, description, tags, categoriaId, category } = req.body;
+        const { title, description, tags, categoriaId, category, companyId, company_id, sectorId, sector_id } = req.body;
         const defaultTags = tags && tags.length > 0 ? tags : ['geral'];
 
         const useCase = new CriarPerguntaUseCase({ perguntaRepository });
@@ -53,7 +53,9 @@ exports.createProblem = async (req, res, next) => {
             titulo: title,
             descricao: description,
             tags: defaultTags,
-            categoriaId: categoriaId || category || 'Atendimento'
+            categoriaId: categoriaId || category || 'Atendimento',
+            companyId: companyId || company_id || 1,
+            sectorId: sectorId || sector_id || null
         });
 
         return res.status(201).json({ id: parseInt(result.id) });
@@ -173,3 +175,34 @@ exports.closeProblemAdmin = async (req, res, next) => {
         next(error);
     }
 };
+
+// 8. Apagar Pergunta / Caso (Somente ADMIN ou Autor)
+exports.deleteProblem = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const securityContext = req.securityContext;
+
+        const problem = await perguntaRepository.findById(id);
+        if (!problem) {
+            return res.status(404).json({ error: 'Caso não encontrado.' });
+        }
+
+        const isAdmin = securityContext.roles?.some(r => ['ADMIN', 'ROLE_ADMIN'].includes(r));
+        const isAuthor = String(problem.autorId) === String(securityContext.userId);
+
+        if (!isAdmin && !isAuthor) {
+            return res.status(403).json({ error: 'Apenas administradores podem apagar casos.' });
+        }
+
+        const adminRepository = require('../infrastructure/database/AdminRepository');
+        const deleted = await adminRepository.deleteProblem(id);
+
+        return res.status(200).json({
+            message: 'Caso excluído com sucesso.',
+            deletedId: deleted?.id || id
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+

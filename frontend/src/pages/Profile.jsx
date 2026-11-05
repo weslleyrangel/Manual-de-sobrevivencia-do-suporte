@@ -7,9 +7,14 @@ import { api } from '../services/api';
 import './Profile.css';
 
 export const Profile = () => {
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [pubCount, setPubCount] = useState(0);
+
+  const handleLogout = async () => {
+    if (logout) await logout();
+    navigate('/login');
+  };
 
   const name = user?.name || 'Usuário';
   const role = user?.role || user?.job_title || 'Membro';
@@ -139,6 +144,23 @@ export const Profile = () => {
                   </div>
                   <Icon name="chevron-right" size={20} color="var(--foreground-muted)" />
                 </Link>
+
+                {/* Sair da Conta */}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="profile-action-card card-white profile-logout-card pressable"
+                  aria-label="Sair da conta"
+                >
+                  <div className="action-icon-box logout-icon-box">
+                    <Icon name="log-out" size={20} color="#EF4444" />
+                  </div>
+                  <div className="action-copy">
+                    <h3 className="action-title text-danger">Sair da conta</h3>
+                    <p className="action-desc">Encerrar sessão atual e trocar de usuário</p>
+                  </div>
+                  <Icon name="chevron-right" size={20} color="#EF4444" />
+                </button>
               </section>
             </div>
           </div>

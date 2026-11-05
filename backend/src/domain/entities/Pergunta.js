@@ -2,13 +2,15 @@ const crypto = require('crypto');
 const { ValidationError } = require('../errors/DomainErrors');
 
 class Pergunta {
-  constructor({ id, titulo, descricao, tags, categoriaId, authorId, status, dataCriacao, solucaoAceitaId, encerradoEm, closedAt, closingReason }) {
+  constructor({ id, titulo, descricao, tags, categoriaId, authorId, status, dataCriacao, solucaoAceitaId, encerradoEm, closedAt, closingReason, companyId, sectorId }) {
     this.id = id || crypto.randomUUID();
     this.titulo = titulo;
     this.descricao = descricao;
     this.tags = tags || [];
     this.categoriaId = categoriaId;
     this.authorId = authorId;
+    this.companyId = companyId || null;
+    this.sectorId = sectorId || null;
     this.status = status || 'ABERTA';
     this.dataCriacao = dataCriacao || new Date();
     this.solucaoAceitaId = solucaoAceitaId || null;

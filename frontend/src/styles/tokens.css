@@ -1,39 +1,46 @@
 :root {
-  /* Opção 1: Guia de Campo & Serenidade (Light Mode) */
+  /* SIA Design System Theme - Light Mode (#f4f4f5 + #E63946) */
   --surface-primary: #FFFFFF;
-  --surface-secondary: #F6F8FA;
-  --surface-tertiary: #EAEFF5;
-  --surface-inverse: #0D1117;
+  --surface-secondary: #FAFAFA;
+  --surface-tertiary: #F4F4F5;
+  --surface-inverse: #111115;
   
-  --foreground-primary: #1F2328;
-  --foreground-secondary: #475467;
-  --foreground-muted: #667085;
+  --foreground-primary: #0F172A;
+  --foreground-secondary: #475569;
+  --foreground-muted: #64748B;
   --foreground-inverse: #FFFFFF;
   
-  --accent-primary: #15803D;
-  --green-deep: #14532D;
-  --green-leaf: #16A34A;
-  --green-mint: #DCFCE7;
+  /* SIA Brand Red */
+  --accent-primary: #E63946;
+  --brand-red: #E63946;
+  --brand-darkred: #C5222F;
+  --brand-lightred: #FEE2E2;
+  
+  /* Aliases para compatibilidade total com os componentes */
+  --green-deep: #C5222F;
+  --green-leaf: #E63946;
+  --green-mint: #FFE5E7;
+  --green-pale: #FFE5E7;
   
   --yellow-signal: #F59E0B;
   --yellow-pale: #FEF3C7;
   
-  --ink: #1F2328;
-  --cream: #F8FAFC;
+  --ink: #0F172A;
+  --cream: #F4F4F5;
   --border-subtle: #E2E8F0;
   --border-input: #CBD5E1;
   --border-strong: #94A3B8;
   
-  --app-bg: #F8FAFC;
+  --app-bg: #F4F4F5;
   --app-surface: #FFFFFF;
-  --app-text: #1F2328;
-  --app-muted: #475467;
-  --app-accent: #15803D;
+  --app-text: #0F172A;
+  --app-muted: #475569;
+  --app-accent: #E63946;
   --app-highlight: #F59E0B;
   
   /* Semantic Badges Tokens */
-  --badge-mint-bg: #DCFCE7;
-  --badge-mint-text: #15803D;
+  --badge-mint-bg: rgba(230, 57, 70, 0.10);
+  --badge-mint-text: #E63946;
   --badge-yellow-bg: #FEF3C7;
   --badge-yellow-text: #B45309;
   --badge-draft-bg: #F1F5F9;
@@ -63,51 +70,56 @@
 
   /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.06);
-  --shadow-btn: 0 4px 14px rgba(21, 128, 61, 0.25);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-btn: 0 4px 14px rgba(230, 57, 70, 0.28);
   --shadow-popover: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 [data-theme='dark'] {
-  /* Slate Obsidian & Emerald Dark Mode (Modern Pro UI) */
-  --surface-primary: #161B22;
-  --surface-secondary: #21262D;
-  --surface-tertiary: #30363D;
-  --surface-inverse: #F0F6FC;
+  /* SIA Dark Mode Theme (#0c0c0e + #111115 + #E63946) */
+  --surface-primary: #111115;
+  --surface-secondary: #18181D;
+  --surface-tertiary: #24242C;
+  --surface-inverse: #F4F4F5;
   
-  --foreground-primary: #F0F6FC;
-  --foreground-secondary: #C9D1D9;
-  --foreground-muted: #8B949E;
-  --foreground-inverse: #0D1117;
+  --foreground-primary: #F4F4F5;
+  --foreground-secondary: #D4D4D8;
+  --foreground-muted: #9CA3AF;
+  --foreground-inverse: #0C0C0E;
   
-  --accent-primary: #2EA043;
-  --green-deep: #0D2818;
-  --green-leaf: #3FB950;
-  --green-mint: #163820;
+  --accent-primary: #E63946;
+  --brand-red: #E63946;
+  --brand-darkred: #C5222F;
+  --brand-lightred: rgba(230, 57, 70, 0.18);
   
-  --yellow-signal: #E3B341;
+  --green-deep: #7F1D1D;
+  --green-leaf: #E63946;
+  --green-mint: rgba(230, 57, 70, 0.18);
+  --green-pale: rgba(230, 57, 70, 0.18);
+  
+  --yellow-signal: #F59E0B;
   --yellow-pale: #34280B;
   
-  --ink: #F0F6FC;
-  --cream: #0D1117;
-  --border-subtle: #30363D;
-  --border-input: #38414E;
-  --border-strong: #484F58;
+  --ink: #F4F4F5;
+  --cream: #0C0C0E;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-input: rgba(255, 255, 255, 0.15);
+  --border-strong: rgba(255, 255, 255, 0.25);
   
-  --app-bg: #0D1117;
-  --app-surface: #161B22;
-  --app-text: #F0F6FC;
-  --app-muted: #8B949E;
-  --app-accent: #3FB950;
-  --app-highlight: #E3B341;
+  --app-bg: #0C0C0E;
+  --app-surface: #111115;
+  --app-text: #F4F4F5;
+  --app-muted: #9CA3AF;
+  --app-accent: #E63946;
+  --app-highlight: #F59E0B;
 
-  /* Clean High-Tech Badges for Dark Mode */
-  --badge-mint-bg: rgba(46, 160, 67, 0.18);
-  --badge-mint-text: #56D364;
-  --badge-yellow-bg: rgba(227, 179, 65, 0.18);
-  --badge-yellow-text: #F2CC60;
-  --badge-draft-bg: #21262D;
-  --badge-draft-text: #C9D1D9;
+  /* Badges in Dark Mode */
+  --badge-mint-bg: rgba(230, 57, 70, 0.18);
+  --badge-mint-text: #FF6B7A;
+  --badge-yellow-bg: rgba(245, 158, 11, 0.18);
+  --badge-yellow-text: #FCD34D;
+  --badge-draft-bg: #27272A;
+  --badge-draft-text: #D4D4D8;
 
   --color-error: #3C1E1E;
   --color-error-background: #4C1D1D;
@@ -117,5 +129,5 @@
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --shadow-btn: 0 4px 14px rgba(0, 0, 0, 0.6);
+  --shadow-btn: 0 4px 14px rgba(230, 57, 70, 0.35);
 }

@@ -15,7 +15,8 @@ router.post('/:id/solutions', authMiddleware, problemsController.addSolution);
 router.put('/:id/solutions/:solutionId/accept', authMiddleware, problemsController.acceptSolution);
 router.put('/:id/solutions/:solutionId', authMiddleware, problemsController.editSolution);
 
-// 4. RBAC: Encerramento Administrativo (Requer Autenticação de Técnico/Admin)
+// 4. RBAC: Encerramento Administrativo e Exclusão (Requer Autenticação)
 router.post('/:id/close-admin', authMiddleware, problemsController.closeProblemAdmin);
+router.delete('/:id', authMiddleware, problemsController.deleteProblem);
 
 module.exports = router;

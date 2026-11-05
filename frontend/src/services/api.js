@@ -23,6 +23,15 @@ export const api = {
         return parseApiResponse(res, 'E-mail ou senha incorretos');
     },
 
+    async guestLogin() {
+        const res = await fetch(`${API_BASE}/auth/guest`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        });
+        return parseApiResponse(res, 'Falha ao acessar como convidado');
+    },
+
     async register(data) {
         const res = await fetch(`${API_BASE}/auth/register`, {
             method: 'POST',
@@ -274,7 +283,72 @@ export const api = {
         return parseApiResponse(res, 'Erro ao excluir publicação');
     },
 
-    // 4. Busca Full-Text
+    async deleteProblem(problemId) {
+        const res = await fetch(`${API_BASE}/problems/${problemId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        return parseApiResponse(res, 'Erro ao excluir caso');
+    },
+
+    // 4. Empresas, Setores e Categorias
+    async getCompanies() {
+        const res = await fetch(`${API_BASE}/companies`, {
+            credentials: 'include'
+        });
+        return parseApiResponse(res, 'Erro ao listar empresas');
+    },
+
+    async createCompany(name) {
+        const res = await fetch(`${API_BASE}/companies`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ name })
+        });
+        return parseApiResponse(res, 'Erro ao cadastrar empresa');
+    },
+
+    async getCompanyDetails(companyId) {
+        const res = await fetch(`${API_BASE}/companies/${companyId}`, {
+            credentials: 'include'
+        });
+        return parseApiResponse(res, 'Erro ao obter detalhes da empresa');
+    },
+
+    async createCategory(companyId, name) {
+        const res = await fetch(`${API_BASE}/companies/${companyId}/categories`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ name })
+        });
+        return parseApiResponse(res, 'Erro ao cadastrar categoria');
+    },
+
+    async createSector(companyId, name) {
+        const res = await fetch(`${API_BASE}/companies/${companyId}/sectors`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ name })
+        });
+        return parseApiResponse(res, 'Erro ao cadastrar setor');
+    },
+
+    async getCompanyProblems(companyId, params = {}) {
+        const queryParams = new URLSearchParams();
+        if (params.category) queryParams.append('category', params.category);
+        if (params.sector_id) queryParams.append('sector_id', params.sector_id);
+        if (params.q) queryParams.append('q', params.q);
+
+        const res = await fetch(`${API_BASE}/companies/${companyId}/problems?${queryParams.toString()}`, {
+            credentials: 'include'
+        });
+        return parseApiResponse(res, 'Erro ao listar casos da empresa');
+    },
+
+    // 5. Busca Full-Text
     async search(query) {
         try {
             const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query || '')}`, {

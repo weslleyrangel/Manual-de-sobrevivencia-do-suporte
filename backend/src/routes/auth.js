@@ -7,6 +7,7 @@ const { authRateLimiter, emailActionRateLimiter } = require('../middlewares/rate
 // Autenticação básica com rate limiting
 router.post('/register', authRateLimiter, authController.register);
 router.post('/login', authRateLimiter, authController.login);
+router.post('/guest', authController.guestLogin);
 router.post('/logout', authController.logout);
 
 // Ativação e verificação de e-mail

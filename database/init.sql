@@ -65,4 +65,38 @@ ALTER TABLE problems
 CREATE INDEX IF NOT EXISTS idx_problems_fts ON problems 
     USING gin(to_tsvector('portuguese', coalesce(title, '') || ' ' || coalesce(description, '') || ' ' || coalesce(category, '')));
 
+-- Empresas, Setores e Categorias
+CREATE TABLE IF NOT EXISTS companies (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS sectors (
+    id SERIAL PRIMARY KEY,
+    company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(company_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS categories (
+    id SERIAL PRIMARY KEY,
+    company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(company_id, name)
+);
+
+ALTER TABLE problems 
+    ADD COLUMN IF NOT EXISTS company_id INTEGER REFERENCES companies(id) ON DELETE CASCADE,
+    ADD COLUMN IF NOT EXISTS sector_id INTEGER REFERENCES sectors(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_problems_company ON problems(company_id);
+CREATE INDEX IF NOT EXISTS idx_problems_sector ON problems(sector_id);
+
+INSERT INTO companies (id, name) VALUES (1, 'MEJC') ON CONFLICT (name) DO NOTHING;
+SELECT setval('companies_id_seq', (SELECT COALESCE(MAX(id), 1) FROM companies));
+UPDATE problems SET company_id = 1 WHERE company_id IS NULL;
+
 

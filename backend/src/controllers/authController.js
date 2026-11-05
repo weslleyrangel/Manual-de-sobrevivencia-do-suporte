@@ -141,6 +141,61 @@ exports.login = async (req, res, next) => {
     }
 };
 
+exports.guestLogin = async (req, res, next) => {
+    try {
+        const guestEmail = 'convidado@suporte.com';
+        let result = await db.query('SELECT * FROM users WHERE email = $1', [guestEmail]);
+        let user;
+
+        if (result.rows && result.rows.length > 0) {
+            user = result.rows[0];
+        } else {
+            const insertResult = await db.query(
+                `INSERT INTO users (id, name, email, password_hash, role, job_title, is_verified)
+                 VALUES (999, 'Convidado', $1, 'guest_no_password', 'GUEST', 'Acesso Convidado', true)
+                 ON CONFLICT (email) DO UPDATE SET role = 'GUEST'
+                 RETURNING *`,
+                [guestEmail]
+            );
+            user = insertResult.rows[0];
+        }
+
+        const token = jwt.sign(
+            {
+                userId: user.id,
+                name: user.name,
+                email: user.email,
+                role: 'GUEST',
+                isVerified: true
+            },
+            JWT_SECRET,
+            { expiresIn: '1d' }
+        );
+
+        res.cookie('jwt', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000
+        });
+
+        return res.status(200).json({
+            message: 'Acesso como convidado concedido',
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: 'GUEST',
+                job_title: user.job_title || 'Acesso Convidado',
+                is_verified: true
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
 exports.verifyEmail = async (req, res, next) => {
     try {
         const { token } = req.params;

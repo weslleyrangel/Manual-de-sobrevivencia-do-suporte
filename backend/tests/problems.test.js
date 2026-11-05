@@ -64,8 +64,8 @@ describe('Problems API Endpoints', () => {
             expect(res.statusCode).toBe(201);
             expect(res.body).toHaveProperty('id', 2);
             expect(db.query).toHaveBeenCalledWith(
-                'INSERT INTO problems (title, description, author_id, status, category) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at',
-                ['VPN caindo constantemente', 'Desconecta a cada 5 min', '1', 'ABERTA', 'Atendimento']
+                'INSERT INTO problems (title, description, author_id, status, category, company_id, sector_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, created_at',
+                ['VPN caindo constantemente', 'Desconecta a cada 5 min', '1', 'ABERTA', 'Atendimento', 1, null]
             );
         });
     });
