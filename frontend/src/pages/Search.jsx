@@ -5,125 +5,74 @@ import { Icon } from '../components/common/Icons';
 import { api } from '../services/api';
 import './Search.css';
 
-const DEFAULT_ARTICLES = [
-  {
-    id: '1',
-    title: 'Como lidar com um cliente irritado',
-    category: 'Atendimento',
-    snippet: 'Dicas práticas de empatia e desescalonamento para atendimentos de alta tensão.',
-    views_count: 1240
-  },
-  {
-    id: '2',
-    title: '5 frases para desarmar uma conversa difícil',
-    category: 'Atendimento',
-    snippet: 'Substitua termos reativos por acordos claros e mantenha o controle do chamado.',
-    views_count: 850
-  },
-  {
-    id: '3',
-    title: 'Checklist: início de turno e conferência de filas',
-    category: 'Processos',
-    snippet: 'Passo a passo matinal para organizar seus chamados e priorizar chamados críticos.',
-    views_count: 670
-  },
-  {
-    id: '4',
-    title: 'Guia de troubleshooting para falha no login / SSO',
-    category: 'Ferramentas',
-    snippet: 'Como diagnosticar rapidamente problemas de autenticação e cookies.',
-    views_count: 890
-  }
-];
-
 export const Search = () => {
   const [searchParams] = useSearchParams();
   const initialCategory = searchParams.get('category') || '';
-  
+
   const [query, setQuery] = useState('');
   const [activeTopic, setActiveTopic] = useState(initialCategory || 'Todos');
-  const [recentSearches, setRecentSearches] = useState([
-    'Política de reembolso',
-    'Acesso bloqueado',
-    'Resposta para atraso'
-  ]);
-  const [remoteResults, setRemoteResults] = useState(null);
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const topics = [
     { name: 'Todos', type: 'all' },
-    { name: 'Atendimento', type: 'mint' },
-    { name: 'Processos', type: 'yellow' },
-    { name: 'Ferramentas', type: 'tool' }
+    { name: 'Impressoras', type: 'mint' },
+    { name: 'Rede', type: 'yellow' },
+    { name: 'Sistemas', type: 'tool' },
+    { name: 'Atendimento', type: 'mint' }
   ];
 
   useEffect(() => {
     let isMounted = true;
-    if (query.trim()) {
+    if (query.trim().length >= 2) {
+      setLoading(true);
       api.search(query.trim())
         .then((res) => {
-          if (isMounted && res && res.length > 0) {
-            setRemoteResults(res);
-          }
+          if (isMounted) setResults(res || []);
         })
-        .catch(() => {});
+        .catch(() => {
+          if (isMounted) setResults([]);
+        })
+        .finally(() => {
+          if (isMounted) setLoading(false);
+        });
     } else {
-      setRemoteResults(null);
+      setResults([]);
+      setLoading(false);
     }
 
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [query]);
 
-  const handleClearHistory = () => {
-    setRecentSearches([]);
-  };
-
-  const handleSelectRecent = (term) => {
-    setQuery(term);
-  };
-
-  // Resultados combinados: API real ou filtro local imediato
-  const localFiltered = DEFAULT_ARTICLES.filter((item) => {
-    const matchesTopic = activeTopic === 'Todos' || item.category.toLowerCase() === activeTopic.toLowerCase();
-    const matchesQuery = query.trim() === '' || 
-      item.title.toLowerCase().includes(query.toLowerCase()) || 
-      item.snippet.toLowerCase().includes(query.toLowerCase());
-    return matchesTopic && matchesQuery;
+  // Filtro por categoria caso o usuário selecione uma tag
+  const filteredResults = results.filter((item) => {
+    if (activeTopic === 'Todos') return true;
+    return item.category?.toLowerCase() === activeTopic.toLowerCase();
   });
-
-  const displayArticles = remoteResults && remoteResults.length > 0 ? remoteResults : localFiltered;
 
   return (
     <AppLayout>
       <div className="search-screen-wrapper">
-        {/* Mobile Header */}
         <header className="search-mobile-header">
           <div className="search-brand">
             <div className="search-brand-icon" />
-            <span className="search-brand-name">Manual de Sobrevivência</span>
+            <span className="search-brand-name">Manual do Suporte</span>
           </div>
-          <button
-            type="button"
-            className="search-filter-btn pressable"
-            onClick={() => setActiveTopic(activeTopic === 'Todos' ? 'Atendimento' : 'Todos')}
-            aria-label="Filtrar tópicos"
-          >
-            <Icon name="sliders-horizontal" size={18} color="var(--ink)" />
-          </button>
         </header>
 
-        {/* Content */}
         <div className="search-content">
-          <h1 className="search-title">Pesquisar</h1>
+          <h1 className="search-title">Pesquisa Rápida</h1>
+          <p style={{ color: 'var(--foreground-muted)', fontSize: '14px', marginBottom: '16px' }}>
+            Digite o erro, modelo de impressora ou insumo (Ex: Elgin, Spooler, Bobina...)
+          </p>
 
-          {/* Search Query Input */}
+          {/* Campo de Busca com Foco Automático */}
           <div className="search-input-wrapper">
             <Icon name="search" size={20} color="var(--green-leaf)" />
             <input
               type="text"
               className="search-input-field"
-              placeholder="Como acalmar um cliente?"
+              placeholder="O que o usuário está enfrentando?"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               autoFocus
@@ -140,112 +89,85 @@ export const Search = () => {
             )}
           </div>
 
-          {/* If there is active search query */}
-          {query.trim().length > 0 ? (
+          {/* Pílulas de Tópicos / Categorias */}
+          <div className="topic-tags-row" style={{ marginTop: '16px', marginBottom: '24px' }}>
+            {topics.map((topic) => {
+              const isSelected = activeTopic === topic.name;
+              return (
+                <button
+                  key={topic.name}
+                  type="button"
+                  onClick={() => setActiveTopic(isSelected ? 'Todos' : topic.name)}
+                  className={`topic-pill pill-${topic.type} pressable ${isSelected ? 'selected' : ''}`}
+                >
+                  {topic.name}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Resultados da Busca */}
+          {query.trim().length >= 2 ? (
             <section className="search-results-section animate-fade">
               <div className="search-section-header">
                 <h2 className="search-section-title">
-                  Resultados ({displayArticles.length})
+                  {loading ? 'Buscando...' : `Resultados (${filteredResults.length})`}
                 </h2>
               </div>
+
               <div className="search-results-list">
-                {displayArticles.length > 0 ? (
-                  displayArticles.map((article) => (
+                {filteredResults.length > 0 ? (
+                  filteredResults.map((article) => (
                     <Link
                       key={article.id}
                       to={`/publication/${article.id}`}
                       className="search-result-card pressable"
+                      style={{ display: 'block', textDecoration: 'none' }}
                     >
-                      <div className="result-category-tag">{article.category}</div>
-                      <h3 className="result-title">{article.title}</h3>
-                      <p className="result-snippet">{article.snippet || article.description}</p>
-                      <span className="result-meta">
-                        Por {article.author_name || 'Especialista'} · {article.views_count || 0} visualizações
-                      </span>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                        <span className="result-category-tag">{article.category}</span>
+                        {article.equipment_model && (
+                          <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#e0f2fe', color: '#0369a1' }}>
+                            🖨️ {article.equipment_model}
+                          </span>
+                        )}
+                        {article.supplies_info && (
+                          <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#fef3c7', color: '#92400e' }}>
+                            🏷️ {article.supplies_info}
+                          </span>
+                        )}
+                        {article.has_steps && (
+                          <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#dcfce7', color: '#15803d' }}>
+                            📷 Passo a passo com fotos
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="result-title" style={{ fontSize: '17px', color: 'var(--ink)', marginBottom: '6px' }}>
+                        {article.title}
+                      </h3>
+                      <p className="result-snippet" style={{ color: 'var(--foreground-secondary)', fontSize: '14px', lineHeight: '1.4' }}>
+                        {article.snippet}
+                      </p>
                     </Link>
                   ))
                 ) : (
-                  <div className="no-results-box">
-                    <p>Nenhum artigo encontrado para "<strong>{query}</strong>".</p>
-                    <span>Tente outras palavras-chave ou navegue pelos temas abaixo.</span>
-                  </div>
+                  !loading && (
+                    <div className="no-results-box" style={{ textAlign: 'center', padding: '40px 20px' }}>
+                      <p style={{ fontSize: '16px', color: 'var(--ink)' }}>Nenhum procedimento encontrado para "<strong>{query}</strong>".</p>
+                      <span style={{ fontSize: '13px', color: 'var(--foreground-muted)' }}>
+                        Dica: Tente palavras-chave como o modelo da impressora ou o código do erro.
+                      </span>
+                    </div>
+                  )
                 )}
               </div>
             </section>
           ) : (
-            <>
-              {/* Recent Searches */}
-              {recentSearches.length > 0 && (
-                <section className="recent-searches-section">
-                  <div className="search-section-header">
-                    <h2 className="search-section-title">Pesquisas recentes</h2>
-                    <button
-                      type="button"
-                      onClick={handleClearHistory}
-                      className="clear-searches-link pressable"
-                    >
-                      LIMPAR
-                    </button>
-                  </div>
-
-                  <div className="recent-searches-list">
-                    {recentSearches.map((term, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        className="recent-search-item pressable"
-                        onClick={() => handleSelectRecent(term)}
-                      >
-                        <Icon name="history" size={17} color="var(--foreground-muted)" />
-                        <span className="recent-search-text">{term}</span>
-                      </button>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Explore by topic */}
-              <section className="explore-topics-section">
-                <div className="search-section-header">
-                  <h2 className="search-section-title">Explore por tema</h2>
-                </div>
-
-                <div className="topic-tags-row">
-                  {topics.map((topic) => {
-                    const isSelected = activeTopic === topic.name;
-                    return (
-                      <button
-                        key={topic.name}
-                        type="button"
-                        onClick={() => setActiveTopic(isSelected ? 'Todos' : topic.name)}
-                        className={`topic-pill pill-${topic.type} pressable ${isSelected ? 'selected' : ''}`}
-                      >
-                        {topic.name}
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
-
-              {/* Suggested Article */}
-              <section className="suggested-article-section">
-                <div className="search-section-header">
-                  <h2 className="search-section-title">Sugestão para você</h2>
-                </div>
-
-                <Link to="/publication/2" className="suggested-card pressable">
-                  <div className="suggested-icon-box">
-                    <Icon name="message-circle-heart" size={24} color="var(--badge-yellow-text)" />
-                  </div>
-                  <div className="suggested-copy">
-                    <span className="suggested-category">ATENDIMENTO</span>
-                    <h3 className="suggested-title">
-                      5 frases para desarmar uma conversa difícil
-                    </h3>
-                  </div>
-                </Link>
-              </section>
-            </>
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--foreground-muted)' }}>
+              <Icon name="search" size={40} color="var(--border-subtle)" />
+              <p style={{ marginTop: '12px', fontSize: '15px' }}>Comece a digitar para ver os procedimentos em tempo real.</p>
+            </div>
           )}
         </div>
       </div>

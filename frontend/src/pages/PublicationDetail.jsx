@@ -27,6 +27,7 @@ export const PublicationDetail = () => {
   const [editingSolutionId, setEditingSolutionId] = useState(null);
   const [editingText, setEditingText] = useState('');
   const [editLoading, setEditLoading] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState(null);
 
   const [comments, setComments] = useState([]);
 
@@ -373,6 +374,33 @@ export const PublicationDetail = () => {
                 <h1 className="pubdetail-case-title">{publication.title}</h1>
               </div>
 
+              {/* Card em Destaque de Equipamento e Insumos */}
+              {(publication.equipment_model || publication.supplies_info) && (
+                <div style={{
+                  backgroundColor: '#f8fafc',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  gap: '24px',
+                  flexWrap: 'wrap'
+                }}>
+                  {publication.equipment_model && (
+                    <div>
+                      <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Equipamento:</span>
+                      <div style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>🖨️ {publication.equipment_model}</div>
+                    </div>
+                  )}
+                  {publication.supplies_info && (
+                    <div>
+                      <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Insumo Compatível:</span>
+                      <div style={{ fontSize: '16px', fontWeight: 700, color: '#b45309' }}>🏷️ {publication.supplies_info}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Problem Description Card */}
               <section className="pubdetail-solution-card">
                 <div className="solution-heading">
@@ -393,12 +421,68 @@ export const PublicationDetail = () => {
                     </div>
                     <p style={{ marginTop: '6px', fontSize: '14px', color: 'var(--ink)' }}>{primarySolution.content || primarySolution.text}</p>
                     
-                    {primarySteps.length > 0 && (
-                      <div className="solution-steps-box" style={{ marginTop: '10px' }}>
-                        <span className="steps-subheading">Passos:</span>
-                        {primarySteps.map((st, i) => (
-                          <div key={i} className="solution-step-item">{typeof st === 'string' ? st : JSON.stringify(st)}</div>
-                        ))}
+                    {/* Timeline Visual de Passos com Imagens */}
+                    {primarySteps && primarySteps.length > 0 && (
+                      <div className="solution-steps-timeline" style={{ marginTop: '20px' }}>
+                        <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '14px', color: 'var(--green-leaf)' }}>
+                          Passo a Passo de Resolução:
+                        </h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          {primarySteps.map((step, idx) => (
+                            <div key={idx} style={{
+                              backgroundColor: 'var(--surface-primary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '12px',
+                              padding: '16px'
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                <span style={{
+                                  backgroundColor: 'var(--green-leaf)',
+                                  color: '#fff',
+                                  borderRadius: '50%',
+                                  width: '24px',
+                                  height: '24px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '12px',
+                                  fontWeight: 700
+                                }}>
+                                  {idx + 1}
+                                </span>
+                                <strong style={{ fontSize: '15px', color: 'var(--ink)' }}>
+                                  {typeof step === 'string' ? step : (step.title || `Etapa ${idx + 1}`)}
+                                </strong>
+                              </div>
+                              {typeof step === 'object' && step?.description && (
+                                <p style={{ fontSize: '14px', color: 'var(--foreground-secondary)', margin: '6px 0 12px 32px' }}>
+                                  {step.description}
+                                </p>
+                              )}
+                              {typeof step === 'object' && step?.image_url && (
+                                <div style={{ marginLeft: '32px', marginTop: '8px' }}>
+                                  <img
+                                    src={step.image_url}
+                                    alt={`Print da etapa ${idx + 1}`}
+                                    style={{
+                                      maxWidth: '100%',
+                                      maxHeight: '340px',
+                                      borderRadius: '8px',
+                                      border: '1px solid var(--border-subtle)',
+                                      cursor: 'pointer',
+                                      objectFit: 'contain'
+                                    }}
+                                    onClick={() => setZoomedImage(step.image_url)}
+                                    title="Clique para abrir a imagem em tamanho original"
+                                  />
+                                  <span style={{ display: 'block', fontSize: '11px', color: 'var(--foreground-muted)', marginTop: '4px' }}>
+                                    🔍 Clique na imagem para expandir
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -651,6 +735,92 @@ export const PublicationDetail = () => {
         onConfirm={handleAdminClose}
         loading={closingAdminLoading}
       />
+
+      {/* Modal de Zoom de Prints */}
+      {zoomedImage && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '20px'
+          }}
+          onClick={() => setZoomedImage(null)}
+        >
+          <div
+            style={{
+              position: 'relative',
+              maxWidth: '92vw',
+              maxHeight: '92vh',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '10px'
+            }}>
+              <a
+                href={zoomedImage}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: '#f8fafc',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                Abrir em nova aba ↗
+              </a>
+              <button
+                type="button"
+                onClick={() => setZoomedImage(null)}
+                style={{
+                  backgroundColor: '#ef4444',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '6px 14px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                Fechar ✕
+              </button>
+            </div>
+            <img
+              src={zoomedImage}
+              alt="Print ampliado do passo a passo"
+              style={{
+                maxWidth: '100%',
+                maxHeight: '82vh',
+                borderRadius: '8px',
+                objectFit: 'contain',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5)',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}
+            />
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 };
