@@ -1,132 +1,72 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { supabase } from '../services/supabase';
 
 export const AuthContext = createContext({
     user: null,
-    isAuthenticated: false,
+    isAuthenticated: true,
     isVerified: true,
-    isTechnician: false,
-    isAdmin: false,
+    isTechnician: true,
+    isAdmin: true,
     isGuest: false,
     loading: false,
-    login: () => {},
-    guestLogin: () => {},
-    logout: () => {},
-    isAuthor: () => false
+    login: () => { },
+    logout: () => { },
+    isAuthor: () => true
 });
 
 export const AuthProvider = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState({
+        id: 'analista-suporte',
+        name: 'Analista de Suporte',
+        role: 'ADMIN'
+    });
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        let isMounted = true;
-        const checkAuth = async () => {
-            try {
-                const response = await fetch('/api/v1/auth/me', {
-                    credentials: 'include'
+        // Verifica se há sessão ativa no Supabase
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session?.user) {
+                setUser({
+                    id: session.user.id,
+                    name: session.user.email?.split('@')[0] || 'Analista de Suporte',
+                    role: 'ADMIN'
                 });
-                if (response.ok) {
-                    const data = await response.json();
-                    if (isMounted) {
-                        setIsAuthenticated(true);
-                        setUser(data.user);
-                    }
-                } else {
-                    if (isMounted) {
-                        setIsAuthenticated(false);
-                        setUser(null);
-                    }
-                }
-            } catch (err) {
-                if (isMounted) {
-                    setIsAuthenticated(false);
-                    setUser(null);
-                }
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
-                }
             }
-        };
+        });
 
-        checkAuth();
-        return () => { isMounted = false; };
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                setUser({
+                    id: session.user.id,
+                    name: session.user.email?.split('@')[0] || 'Analista de Suporte',
+                    role: 'ADMIN'
+                });
+            }
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
-    const login = (userData) => {
-        if (!userData || typeof userData !== 'object' || userData.nativeEvent) {
-            console.warn('login() chamado sem dados de usuário válidos.');
-            return;
-        }
-        setIsAuthenticated(true);
-        setUser(userData);
-    };
-
-    const guestLogin = async () => {
-        try {
-            const res = await fetch('/api/v1/auth/guest', {
-                method: 'POST',
-                credentials: 'include'
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setIsAuthenticated(true);
-                setUser(data.user);
-                return data.user;
-            }
-        } catch (e) {
-            console.error('Erro no guestLogin', e);
-        }
-    };
-
     const logout = async () => {
-        try {
-            await fetch('/api/v1/auth/logout', {
-                method: 'POST',
-                credentials: 'include'
-            });
-        } catch (e) {
-            console.warn('Logout offline', e);
-        }
-        setIsAuthenticated(false);
+        await supabase.auth.signOut();
         setUser(null);
     };
 
-    const isVerified = Boolean(user?.is_verified ?? user?.isVerified ?? true);
-    const isTechnician = Boolean(
-        user?.role === 'ROLE_TECNICO' || 
-        user?.role === 'ROLE_ADMIN' || 
-        user?.role?.toLowerCase()?.includes('tecnico') ||
-        user?.role?.toLowerCase()?.includes('técnico') ||
-        user?.role?.toLowerCase()?.includes('n2') ||
-        user?.role?.toLowerCase()?.includes('n3')
-    );
-    const isAdmin = Boolean(
-        user?.role === 'ROLE_ADMIN' || 
-        user?.role === 'ADMIN' || 
-        user?.role?.toUpperCase()?.includes('ADMIN')
-    );
-    const isGuest = Boolean(user?.role === 'GUEST' || user?.role === 'ROLE_GUEST');
-    const isAuthor = (authorId) => {
-        if (!user || authorId === undefined || authorId === null) return false;
-        return String(user.id) === String(authorId);
-    };
-
     return (
-        <AuthContext.Provider value={{ 
-            isAuthenticated, 
-            user, 
-            login, 
-            guestLogin,
-            logout, 
-            loading,
-            isVerified,
-            isTechnician,
-            isAdmin,
-            isGuest,
-            isAuthor
-        }}>
+        <AuthContext.Provider
+            value={{
+                user,
+                isAuthenticated: true,
+                isVerified: true,
+                isTechnician: true,
+                isAdmin: true,
+                isGuest: false,
+                loading,
+                login: () => { },
+                logout,
+                isAuthor: () => true
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );
